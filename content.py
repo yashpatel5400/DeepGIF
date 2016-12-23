@@ -59,6 +59,10 @@ def style_extract(features):
 	return img.resize((s.WIDTH, s.HEIGHT), 
 		PIL.Image.ANTIALIAS).convert('RGB')
 
+output = base_model.get_layer(intermediate).output
+K.dot(output, K.transpose(output))
+K.sum(output, axis=2)
+
 def main(filename):
 	unextended_filename = filename.split(".")[0]
 
