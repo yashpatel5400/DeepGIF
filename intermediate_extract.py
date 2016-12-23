@@ -34,14 +34,38 @@ def stitch_images(images):
 							 (s.HEIGHT + margin) * j: (s.HEIGHT + margin) * j + s.HEIGHT, :] = img
 	return stitched_filters
 
+def content_extract(features):
+	VISUALIZE_FILTERS = 16
+	imgs = []
+	shuffle(features)
+	for img_filter in range(VISUALIZE_FILTERS):
+		img = Image.fromarray(features[0,:,:,img_filter])
+		imgs.append(img.resize((s.WIDTH, s.HEIGHT), 
+			PIL.Image.ANTIALIAS).convert('RGB'))
+	return stitch_images(imgs)
+
+def style_extract(features):
+	num_filters = features.shape[-1]
+
+	# creates the Gram matrix
+	gram = np.zeros((num_filters, num_filters))
+	for i in range(num_filters):
+		a = features[0,:,:,i]
+		for j in range(num_filters):
+			b = features[0,:,:,j]
+			gram[i][j] = np.tensordot(a, b)
+
+	img = Image.fromarray(gram)
+	return img.resize((s.WIDTH, s.HEIGHT), 
+		PIL.Image.ANTIALIAS).convert('RGB')
+
 def main(filename):
 	unextended_filename = filename.split(".")[0]
 
 	base_model = VGG19(weights='imagenet')
 	intermediates = [name for name in 
 		[layer.name for layer in base_model.layers] if "pool" in name]
-	VISUALIZE_FILTERS = 16
-
+	
 	img = image.load_img("{}/{}".format(s.INPUT_DIR, filename), 
 		target_size=(s.WIDTH, s.HEIGHT))
 	x = image.img_to_array(img)
@@ -51,18 +75,15 @@ def main(filename):
 	for i, intermediate in enumerate(intermediates):
 		intermediate_model = Model(input=base_model.input, 
 			output=base_model.get_layer(intermediate).output)
-		pool_features = intermediate_model.predict(x)
-
-		imgs = []
-		shuffle(pool_features)
-		for img_filter in range(VISUALIZE_FILTERS):
-			img = Image.fromarray(pool_features[0,:,:,img_filter])
-			imgs.append(img.resize((s.WIDTH, s.HEIGHT), 
-				PIL.Image.ANTIALIAS).convert('RGB'))
+		features = intermediate_model.predict(x)
 		
-		stitched_filters = stitch_images(imgs)
+		content = content_extract(features)
 		imsave("{}/{}_layer-{}.png".format(s.OUTPUT_CONTENT_DIR, 
-			unextended_filename,i), stitched_filters)
+			unextended_filename, i), content)
+
+		style = style_extract(features)
+		style.save("{}/{}_layer-{}.png".format(s.OUTPUT_STYLE_DIR, 
+			unextended_filename, i))
 
 if __name__ == "__main__":
 	main('cat.jpg')

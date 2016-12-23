@@ -17,7 +17,7 @@ base_model = VGG19(weights='imagenet')
 intermediates = [name for name in 
 	[layer.name for layer in base_model.layers] if "pool" in name]
 	
-img_path = 'cat.jpg'
+img_path = 'input/cat.jpg'
 img = image.load_img(img_path, target_size=(224, 224))
 x = image.img_to_array(img)
 x = np.expand_dims(x, axis=0)
@@ -28,9 +28,17 @@ intermediate_model = Model(input=base_model.input,
 	output=base_model.get_layer(intermediate).output)
 pool_features = intermediate_model.predict(x)
 
+a = pool_features[0,:,:,0]
+b = pool_features[0,:,:,1]
+gram = 0
+for i in range(112):
+	for j in range(112):
+		gram += a[i][j] * b[i][j]
+
 filter_output = pool_features[0,:,:,3]
 img = Image.fromarray(filter_output)
 img = img.resize((224,224), PIL.Image.ANTIALIAS).convert('RGB')
+
 img.save('test_pil.png')
 imsave('test_sci.png', filter_output)
 
