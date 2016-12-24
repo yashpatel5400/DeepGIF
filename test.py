@@ -1,3 +1,5 @@
+from style import *
+
 import tensorflow as tf
 from keras import backend as K
 from scipy.misc import imsave
@@ -11,7 +13,6 @@ import numpy as np
 
 import PIL
 from PIL import Image
-
 
 base_model = VGG19(weights='imagenet')
 intermediates = [name for name in 
@@ -28,6 +29,8 @@ intermediate_model = Model(input=base_model.input,
 	output=base_model.get_layer(intermediate).output)
 pool_features = intermediate_model.predict(x)
 
+img = visualize_filters(base_model.get_layer(intermediate))
+
 a = pool_features[0,:,:,0]
 b = pool_features[0,:,:,1]
 gram = 0
@@ -38,7 +41,7 @@ for i in range(112):
 filter_output = pool_features[0,:,:,3]
 img = Image.fromarray(filter_output)
 img = img.resize((224,224), PIL.Image.ANTIALIAS).convert('RGB')
-
+	
 img.save('test_pil.png')
 imsave('test_sci.png', filter_output)
 
