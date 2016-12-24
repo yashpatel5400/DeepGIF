@@ -1,3 +1,11 @@
+"""
+__author__ = Yash Patel, Richard Du, and Jason Shi
+__description__ = Miscellaneous functions for calculating style loss
+"""
+
+from keras import backend as K
+import numpy as np
+
 # util function to convert a tensor into a valid image
 # from: https://github.com/fchollet/keras/blob/master/examples/conv_filter_visualization.py
 def deprocess_image(x):
@@ -16,62 +24,55 @@ def deprocess_image(x):
 def normalize(x):
 	return x / (K.sqrt(K.mean(K.square(x))) + 1e-5)
 
+# the following three functions are defined by their descriptions
+# from the "Style Transfer" paper
 def gram_matrix(output):
-	# makes first dimension the number of filters
-	switch_output = K.permute_dimensions(output, (2, 0, 1))
-	flat_output = K.batch_flatten(switch_output)
+	flat_output = K.batch_flatten(output)
 	return K.dot(flat_output, K.transpose(flat_output))
 
-def style_loss(original, generated):
+def style_loss(original, generated, shape):
 	# correspondingly the M_l and N_l from the paper description
-	img_size = (original.shape[0] * original.shape[1]).value
-	num_filters = original.shape[2]
-
+	img_size = (shape[1] * shape[2]).value
+	num_filters = shape[0].value
 	G_orig = gram_matrix(original)
 	G_gen = gram_matrix(generated)
-
-	return (1 / (4 * img_size ** 2)) * K.sum(K.square(G_orig - G_gen))
+	return (1 / (4 * img_size ** 2 * num_filters ** 2)) * K.sum(K.square(G_orig - G_gen))
 
 def content_loss(original, generated):
 	return K.sum(K.square(original - generated))
 
 # adopted from: https://github.com/fchollet/keras/blob/master/examples/conv_filter_visualization.py
-def visualize_filters(input_img, layer):
-	SEARCH_FILTERS = 64
+def visualize_filters(layer):
+	print('Processing layer {}'.format(layer))
+	original = layer.output[0, :, :, :]
+	original = K.permute_dimensions(original, (2, 1, 0))
 
-	imgs = []
-	img_width  = input_img.get_shape()[1]
-	img_height = input_img.get_shape()[2]
+	shape = original.get_shape()
+	num_filters = shape[0]
+	img_width   = shape[1]
+	img_height  = shape[2]
 
-	for filter_index in range(SEARCH_FILTERS):
-		print('Processing filter %d' % filter_index)
-		original = layer.output[:, :, :, filter_index]
+	input_img_data = np.random.random((img_width, img_height, 3)).astype(np.float32)
+	input_img_data = (input_img_data - 0.5) * 20 + 128
 
-		# we build a loss function that maximizes the activation
-		# of the nth filter of the layer considered
-		loss  = style_loss(original)
-		grads = normalize(K.gradients(loss, input_img)[0])
+	# we build a loss function that maximizes the activation
+	# of the nth filter of the layer considered
+	loss  = style_loss(original, input_img_data, shape)
+	grads = normalize(K.gradients(loss, original)[0])
 
-		# this function returns the loss and grads given the input picture
-		iterate = K.function([input_img], [loss, grads])
+	# this function returns the loss and grads given the input picture
+	iterate = K.function([original], [loss, grads])
 
-		# step size for gradient ascent
-		step = 1.0
+	# step size for gradient ascent
+	step = 1.0
 
-		input_img_data = np.random.random((1, img_width, img_height, 3))
-		input_img_data = (input_img_data - 0.5) * 20 + 128
+	for i in range(25):
+		loss_value, grads_value = iterate([input_img_data])
+		input_img_data += grads_value * step
+		print('Current loss value:', loss_value)
+			
+		# some filters get stuck to 0, we can skip them
+		if loss_value <= 0.:
+			break
 
-		for i in range(25):
-			loss_value, grads_value = iterate([input_img_data])
-			input_img_data += grads_value * step
-
-			print('Current loss value:', loss_value)
-			# some filters get stuck to 0, we can skip them
-			if loss_value <= 0.:
-				break
-
-		if loss_value > 0:
-			img = deprocess_image(input_img_data[0])
-			imgs.append((img, loss_value))
-
-	return imgs
+	return deprocess_image(input_img_data[0])
