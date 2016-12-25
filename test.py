@@ -1,3 +1,4 @@
+import settings as s
 from style import *
 
 import tensorflow as tf
@@ -17,19 +18,39 @@ from PIL import Image
 base_model = VGG19(weights='imagenet')
 intermediates = [name for name in 
 	[layer.name for layer in base_model.layers] if "pool" in name]
-	
-img_path = 'input/cat.jpg'
-img = image.load_img(img_path, target_size=(224, 224))
-x = image.img_to_array(img)
-x = np.expand_dims(x, axis=0)
-x = preprocess_input(x)
 
-intermediate = intermediates[0]
+filename = 'starry_night.jpg'	
+input_img = image.load_img("{}/{}".format(s.INPUT_DIR, filename), 
+	target_size=(s.WIDTH, s.HEIGHT))
+input_img_arr = image.img_to_array(input_img)
+input_img_arr = np.expand_dims(input_img_arr, axis=0)
+input_img_arr = preprocess_input(input_img_arr)
+input_img_tensor = K.variable(input_img_arr)
+model_input.append(input_img_tensor)
+
+# tensor used for "molding to" the desired combination
+transform_image_tensor = K.placeholder((1, s.WIDTH, s.HEIGHT, 3))
+model_input.append(transform_image_tensor)
+combined_tensor = K.concatenate(model_input)
+
+intermediate = intermediates[1]
 intermediate_model = Model(input=base_model.input, 
 	output=base_model.get_layer(intermediate).output)
-pool_features = intermediate_model.predict(x)
+# pool_features = intermediate_model.predict(x)
+
+layers = intermediates[:1+1]
+outputs = []
+for layer in layers:
+	output = base_model.get_layer(layer).output[0, :, :, :]
+	outputs.append(K.permute_dimensions(output, (2, 1, 0)))
+
+input_shape = base_model.get_layer(layers[0]).input.get_shape()
+img_width   = input_shape[1]
+img_height  = input_shape[2]
 
 img = visualize_filters(base_model.get_layer(intermediate))
+
+
 
 a = pool_features[0,:,:,0]
 b = pool_features[0,:,:,1]

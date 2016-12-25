@@ -11,6 +11,7 @@ from style import visualize_filters
 import numpy as np
 from random import shuffle
 
+from keras import backend as K
 from keras.applications.vgg19 import VGG19
 from keras.preprocessing import image
 from keras.applications.vgg19 import preprocess_input
@@ -65,29 +66,47 @@ def style_extract(features):
 
 def main(filename):
 	unextended_filename = filename.split(".")[0]
+	model_input = []
 
-	base_model = VGG19(weights='imagenet')
-	intermediates = [name for name in 
-		[layer.name for layer in base_model.layers] if "pool" in name]
-	
-	img = image.load_img("{}/{}".format(s.INPUT_DIR, filename), 
+	# input image
+	input_img = image.load_img("{}/{}".format(s.INPUT_DIR, filename), 
 		target_size=(s.WIDTH, s.HEIGHT))
-	x = image.img_to_array(img)
-	x = np.expand_dims(x, axis=0)
-	x = preprocess_input(x)
-
-	for i, intermediate in enumerate(intermediates):
-		intermediate_model = Model(input=base_model.input, 
-			output=base_model.get_layer(intermediate).output)
-		# features = intermediate_model.predict(x)
+	input_img_arr = image.img_to_array(input_img)
+	input_img_arr = np.expand_dims(input_img_arr, axis=0)
+	input_img_arr = preprocess_input(input_img_arr)
+	input_img_tensor = K.variable(input_img_arr)
+	model_input.append(input_img_tensor)
+	
+	# tensor used for "molding to" the desired combination
+	transform_image_tensor = K.placeholder((1, s.WIDTH, s.HEIGHT, 3))
+	model_input.append(transform_image_tensor)
 		
+	# get results of running VGG for input and the transformation
+	combined_tensor = K.concatenate(model_input, axis=0)
+	model = VGG19(input_tensor=combined_tensor, 
+		weights='imagenet', include_top=False)
+	layers = [name for name in 
+		[layer.name for layer in model.layers] if "pool" in name]
+
+	input_image_features = []
+	transform_image_features = []
+
+	for i, layer in enumerate(layers):
+		# intermediate_model = Model(input=base_model.input, 
+		# 	output=base_model.get_layer(intermediate).output)
+		features = model.get_layer(layer).output
+		input_image_features.append(features[0,:,:,:])
+		transform_image_features.append(features[1,:,:,:])
+
 		# content = content_extract(features)
 		# imsave("{}/{}_layer-{}.png".format(s.OUTPUT_CONTENT_DIR, 
 		#	unextended_filename, i), content)
 
-		style = visualize_filters(intermediate_model, intermediates[:i+1])
-		style.save("{}/{}_layer-{}.png".format(s.OUTPUT_STYLE_DIR, 
-			unextended_filename, i))
+		print('Processing layer {}'.format(i))
+		style = visualize_filters(input_image_features, 
+			transform_image_features, transform_image_tensor)
+		imsave("{}/{}_layer-{}.png".format(s.OUTPUT_STYLE_DIR, 
+			unextended_filename, i), style)
 
 if __name__ == "__main__":
-	main('cat.jpg')
+	main('starry_night.jpg')
