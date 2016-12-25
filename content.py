@@ -6,6 +6,7 @@ test image to verify working
 """
 
 import settings as s
+from style import visualize_filters
 
 import numpy as np
 from random import shuffle
@@ -44,6 +45,9 @@ def content_extract(features):
 			PIL.Image.ANTIALIAS).convert('RGB'))
 	return stitch_images(imgs)
 
+def content_loss(original, generated):
+	return K.sum(K.square(original - generated))
+
 def style_extract(features):
 	num_filters = features.shape[-1]
 
@@ -75,13 +79,13 @@ def main(filename):
 	for i, intermediate in enumerate(intermediates):
 		intermediate_model = Model(input=base_model.input, 
 			output=base_model.get_layer(intermediate).output)
-		features = intermediate_model.predict(x)
+		# features = intermediate_model.predict(x)
 		
-		content = content_extract(features)
-		imsave("{}/{}_layer-{}.png".format(s.OUTPUT_CONTENT_DIR, 
-			unextended_filename, i), content)
+		# content = content_extract(features)
+		# imsave("{}/{}_layer-{}.png".format(s.OUTPUT_CONTENT_DIR, 
+		#	unextended_filename, i), content)
 
-		style = style_extract(features)
+		style = visualize_filters(intermediate_model, intermediates[:i+1])
 		style.save("{}/{}_layer-{}.png".format(s.OUTPUT_STYLE_DIR, 
 			unextended_filename, i))
 
