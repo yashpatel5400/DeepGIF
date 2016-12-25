@@ -46,36 +46,32 @@ def content_extract(features):
 			PIL.Image.ANTIALIAS).convert('RGB'))
 	return stitch_images(imgs)
 
-def content_loss(original, generated):
-	return K.sum(K.square(original - generated))
+def img_tensor(filename):
+	img = image.load_img(filename, target_size=(s.WIDTH, s.HEIGHT))
+	img_arr = image.img_to_array(img)
+	img_arr = np.expand_dims(img_arr, axis=0)
+	img_arr = preprocess_input(img_arr)
+	return K.variable(img_arr)
 
-def style_extract(features):
-	num_filters = features.shape[-1]
+def main(trial_settings):
+	content_img    = trial_settings['content_img']
+	content_weight = trial_settings['content_weight']
+	style_img      = trial_settings['style_img']
+	style_weight   = trial_settings['style_weight']
 
-	# creates the Gram matrix
-	gram = np.zeros((num_filters, num_filters))
-	for i in range(num_filters):
-		a = features[0,:,:,i]
-		for j in range(num_filters):
-			b = features[0,:,:,j]
-			gram[i][j] = np.tensordot(a, b)
+	combined_name = "{}-{}".format(content_img.split(".")[0], 
+		style_img.split(".")[0])
 
-	img = Image.fromarray(gram)
-	return img.resize((s.WIDTH, s.HEIGHT), 
-		PIL.Image.ANTIALIAS).convert('RGB')
-
-def main(filename):
-	unextended_filename = filename.split(".")[0]
 	model_input = []
+	# input image: content
+	content_img_tensor = img_tensor("{}/{}".format(
+		s.INPUT_CONTENT_DIR, content_img))
+	model_input.append(content_img_tensor)
 
-	# input image
-	input_img = image.load_img("{}/{}".format(s.INPUT_DIR, filename), 
-		target_size=(s.WIDTH, s.HEIGHT))
-	input_img_arr = image.img_to_array(input_img)
-	input_img_arr = np.expand_dims(input_img_arr, axis=0)
-	input_img_arr = preprocess_input(input_img_arr)
-	input_img_tensor = K.variable(input_img_arr)
-	model_input.append(input_img_tensor)
+	# input image: style
+	style_img_tensor = img_tensor("{}/{}".format(
+		s.INPUT_STYLE_DIR, style_img))
+	model_input.append(style_img_tensor)
 	
 	# tensor used for "molding to" the desired combination
 	transform_image_tensor = K.placeholder((1, s.WIDTH, s.HEIGHT, 3))
@@ -88,25 +84,26 @@ def main(filename):
 	layers = [name for name in 
 		[layer.name for layer in model.layers] if "pool" in name]
 
-	input_image_features = []
-	transform_image_features = []
+	content_features   = []
+	style_features     = []
+	transform_features = []
 
 	for i, layer in enumerate(layers):
-		# intermediate_model = Model(input=base_model.input, 
-		# 	output=base_model.get_layer(intermediate).output)
-		features = model.get_layer(layer).output
-		input_image_features.append(features[0,:,:,:])
-		transform_image_features.append(features[1,:,:,:])
-
-		# content = content_extract(features)
-		# imsave("{}/{}_layer-{}.png".format(s.OUTPUT_CONTENT_DIR, 
-		#	unextended_filename, i), content)
-
 		print('Processing layer {}'.format(i))
-		style = visualize_filters(input_image_features, 
-			transform_image_features, transform_image_tensor)
-		imsave("{}/{}_layer-{}.png".format(s.OUTPUT_STYLE_DIR, 
-			unextended_filename, i), style)
+		features = model.get_layer(layer).output
+		content_features.append(features[0,:,:,:])
+		style_features.append(features[1,:,:,:])
+		transform_features.append(features[2,:,:,:])
+
+	final_img = visualize_filters(content_features, content_weight, 
+		style_features, style_weight, transform_features, transform_image_tensor)
+	imsave("{}/{}.png".format(s.OUTPUT_FINAL_DIR, combined_name), final_img)
 
 if __name__ == "__main__":
-	main('starry_night.jpg')
+	main({
+		'content_img': 'cat.jpg',
+		'content_weight': 1.0,
+
+		'style_img': 'starry_night.jpg',
+		'style_weight': 1.0,
+	})
