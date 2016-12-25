@@ -3,13 +3,14 @@ __author__ = Yash Patel, Richard Du, and Jason Shi
 __description__ = Miscellaneous functions for calculating style loss
 """
 
+import settings as s
 from keras import backend as K
 import numpy as np
 
 # util function to convert a tensor into a valid image
 # from: https://github.com/fchollet/keras/blob/master/examples/conv_filter_visualization.py
 def deprocess_image(x):
-	x = x.reshape((224, 224, 3))
+	x = x.reshape((s.WIDTH, s.HEIGHT, 3))
 	# Remove zero-center by mean pixel
 	x[:, :, 0] += 103.939
 	x[:, :, 1] += 116.779
@@ -46,18 +47,23 @@ def style_loss(original_features, generated_features):
 		cur_loss += (1 / (4 * img_size ** 2 * num_filters ** 2)) * K.sum(K.square(G_orig - G_gen))
 	return cur_loss
 
+def content_loss(original_features, generated_features):
+	original_content  = original_features[s.CONTENT_FEATURE_LAYER]
+	generated_content = generated_features[s.CONTENT_FEATURE_LAYER]
+	return K.sum(K.square(original_content - generated_content))
+
 # adopted from: https://github.com/fchollet/keras/blob/master/examples/conv_filter_visualization.py
+def visualize_filters(content_features, content_weight, style_features, style_weight, 
+	transform_features, output_img):
 
-def visualize_filters(input_features, output_features, output_img):
-	loss  = style_loss(input_features, output_features)
+	loss  =  content_weight * content_loss(content_features, transform_features)
+	loss  += style_weight * style_loss(style_features, transform_features)
 	grads = normalize(K.gradients(loss, output_img)[0])
-
 	# this function returns the loss and grads given the input picture
 	iterate = K.function([output_img], [loss, grads])
 
 	# step size for gradient ascent
 	step = 1.0
-
 	shape = output_img.get_shape()
 	img_width   = shape[1].value
 	img_height  = shape[2].value
@@ -68,8 +74,4 @@ def visualize_filters(input_features, output_features, output_img):
 		loss_value, grads_value = iterate([input_img_data])
 		input_img_data += grads_value * step
 		print('Current loss value:', loss_value)
-			
-		# some filters get stuck to 0, we can skip them
-		if loss_value <= 0.:
-			break
 	return deprocess_image(input_img_data[0])

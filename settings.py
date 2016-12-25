@@ -8,8 +8,14 @@ __description__ = Global variable declarations (module-level)
 WIDTH  = 224
 HEIGHT = 224
 
-# used for locating files
-INPUT_DIR = './input/'
+# layer of the network used for the content loss: 4th layer per original paper
+CONTENT_FEATURE_LAYER = 3 
+
+# location where the content inputs are saved
+INPUT_CONTENT_DIR = './input/content/'
+
+# location where the style inputs are saved
+INPUT_STYLE_DIR = './input/style/'
 
 # ------------------------- Output Global Variables --------------------------#\
 # location where the content reconstructions are saved
