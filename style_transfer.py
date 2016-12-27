@@ -120,7 +120,7 @@ def transform(content_features, content_weight, style_features, style_weights,
 	grad = lambda x : loss_grad[1]
 
 	for i in range(s.NUM_ITERATIONS):
-		loss_grad = iterate([x])
+		loss_grad = iterate([input_img_data])
 		input_img_data, min_val, info = fmin_l_bfgs_b(loss, 
 			input_img_data.flatten(), fprime=grad, maxfun=20)
 		imsave("{}/{}-{}.png".format(s.OUTPUT_FINAL_DIR, 
