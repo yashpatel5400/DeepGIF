@@ -48,7 +48,7 @@ class Evaluator(object):
 
 	def loss(self, x):
 		x = x.reshape((1, WIDTH, HEIGHT, 3))
-		outs = iterate([x])
+		outs = self.iterate([x])
 		
 		self.loss_value = outs[0]
 		self.grad_values = np.array(outs[1:]).flatten().astype('float64')
