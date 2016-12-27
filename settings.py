@@ -8,7 +8,7 @@ __description__ = Global variable declarations (module-level)
 CONTENT_FEATURE_LAYER = 3 
 
 # gradiet ascent number of iterations (producing image)
-NUM_ITERATIONS = 8
+NUM_ITERATIONS = 5
 
 # gradient ascent step size
 STEP_SIZE = 1.0
