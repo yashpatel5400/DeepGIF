@@ -85,7 +85,7 @@ def content_loss(original_features, generated_features):
 	return K.sum(K.square(original_content - generated_content))
 
 # additional loss function that reduces pixelation
-def total_variation_loss(generated_features):
+def coherence_loss(generated_features):
 	a = K.square(generated_features[:, :WIDTH-1, :HEIGHT-1, :] - 
 		generated_features[:, 1:, :HEIGHT-1, :])
 	b = K.square(generated_features[:, :WIDTH-1, :HEIGHT-1, :] - 
@@ -102,7 +102,7 @@ def transform(content_features, content_weight, style_features, style_weights,
 		transform_features, style_weights):
 
 		loss  += weight * style_loss(style_feature, transform_feature)
-	loss  += total_variation_loss(output_img)
+	loss  += coherence_loss(output_img)
 
 	grads = K.gradients(loss, output_img)[0]
 	# this function returns the loss and grads given the input picture
@@ -116,9 +116,13 @@ def transform(content_features, content_weight, style_features, style_weights,
 	evaluator = Evaluator(iterate)
 	input_img_data = np.random.uniform(0, 255, (1, img_width, img_height, 3)) - 128.
 
+	loss = lambda x : loss_grad[0]
+	grad = lambda x : loss_grad[1]
+
 	for i in range(s.NUM_ITERATIONS):
-		input_img_data, min_val, info = fmin_l_bfgs_b(evaluator.loss, 
-			input_img_data.flatten(), maxfun=20)
+		loss_grad = iterate([x])
+		input_img_data, min_val, info = fmin_l_bfgs_b(loss, 
+			input_img_data.flatten(), fprime=grad, maxfun=20)
 		imsave("{}/{}-{}.png".format(s.OUTPUT_FINAL_DIR, 
 			output_name, i), deprocess_image(input_img_data.copy()))
 		print('Current loss value:', min_val)
