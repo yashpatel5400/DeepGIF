@@ -19,7 +19,7 @@ base_model = VGG19(weights='imagenet')
 intermediates = [name for name in 
 	[layer.name for layer in base_model.layers] if "pool" in name]
 
-filename = 'starry_night.jpg'	
+filename = 'buildings.jpg'
 input_img = image.load_img("{}/{}".format(s.INPUT_DIR, filename), 
 	target_size=(s.WIDTH, s.HEIGHT))
 input_img_arr = image.img_to_array(input_img)
@@ -108,3 +108,28 @@ if loss_value > 0:
 	img = deprocess_image(input_img_data[0])
 	kept_filters.append((img, loss_value))
 # ======================================================
+
+def stitch_images(images):
+	n = 4
+	margin = 5
+
+	width = n * s.WIDTH + (n - 1) * margin
+	height = n * s.HEIGHT + (n - 1) * margin
+	stitched_filters = np.zeros((width, height, 3))
+
+	for i in range(n):
+		for j in range(n):
+			img = images[i * n + j]
+			stitched_filters[(s.WIDTH + margin) * i: (s.WIDTH + margin) * i + s.WIDTH,
+							 (s.HEIGHT + margin) * j: (s.HEIGHT + margin) * j + s.HEIGHT, :] = img
+	return stitched_filters
+
+def content_extract(features):
+	VISUALIZE_FILTERS = 16
+	imgs = []
+	shuffle(features)
+	for img_filter in range(VISUALIZE_FILTERS):
+		img = Image.fromarray(features[0,:,:,img_filter])
+		imgs.append(img.resize((s.WIDTH, s.HEIGHT), 
+			PIL.Image.ANTIALIAS).convert('RGB'))
+	return stitch_images(imgs)
