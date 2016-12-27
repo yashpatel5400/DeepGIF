@@ -178,7 +178,7 @@ def main(trial_settings):
 
 if __name__ == "__main__":
 	main({
-		'content_img': 'italy.jpg',
+		'content_img': 'italy.png',
 		'content_weight': 0.010,
 
 		'style_img': 'starry_night.jpg',
