@@ -63,7 +63,6 @@ class Evaluator(object):
 
 # the following three functions are defined by their descriptions
 # from the "Style Transfer" paper
-
 def gram_matrix(output):
 	output = K.permute_dimensions(output, (2, 0, 1))
 	flat_output = K.batch_flatten(output)
@@ -73,7 +72,6 @@ def style_loss(original_feature, generated_feature):
 	shape = original_feature.get_shape()
 	# correspondingly the M_l and N_l from the paper description
 	img_size = (shape[0] * shape[1]).value
-	# num_filters = 3
 	num_filters = shape[2].value
 		
 	G_orig = gram_matrix(original_feature)
@@ -104,7 +102,7 @@ def transform(content_features, content_weight, style_features, style_weights,
 		transform_features, style_weights):
 
 		loss  += weight * style_loss(style_feature, transform_feature)
-	loss  += total_variation_loss(output_img)
+	# loss  += total_variation_loss(output_img)
 
 	grads = K.gradients(loss, output_img)[0]
 	# this function returns the loss and grads given the input picture
@@ -189,9 +187,9 @@ def main(trial_settings):
 
 if __name__ == "__main__":
 	main({
-		'content_img': 'bagend.jpg',
-		'content_weight': 0.00125,
+		'content_img': 'japan.jpg',
+		'content_weight': 0.0025,
 
-		'style_img': 'scream.jpg',
+		'style_img': 'bamboo.jpg',
 		'style_weights': [.25, .25, .25, .25, .25]
 	})
