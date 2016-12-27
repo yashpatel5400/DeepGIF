@@ -42,17 +42,25 @@ def deprocess_image(x):
 # stores loss and gradients for efficiency
 class GradLoss:
 	def __init__(self, iterate):
+		self.loss_value = None
+		self.grads_values = None
 		self.iterate = iterate
 
 	def loss(self, x):
 		x = x.reshape((1, WIDTH, HEIGHT, 3))
 		outs = self.iterate([x])
+		
+		self.loss_value = outs[0]
 		self.grad_values = np.array(outs[1:]).flatten().astype('float64')
-		return outs[0]
+		return self.loss_value
 
-	def grad(self, x):
-		return self.grad_values
-
+	def grads(self, x):
+		grad_values = np.copy(self.grad_values)
+		
+		self.loss_value  = None
+		self.grad_values = None
+		return grad_values
+		
 # the following three functions are defined by their descriptions
 # from the "Style Transfer" paper
 def gram_matrix(output):
@@ -104,8 +112,7 @@ def transform(content_features, content_weight, style_features, style_weights,
 	img_width   = shape[1].value
 	img_height  = shape[2].value
 	
-	iterate = K.function([output_img], [loss, grads])
-	grad_loss = GradLoss(iterate)
+	grad_loss = GradLoss(K.function([output_img], [loss, grads]))
 	input_img_data = np.random.uniform(0, 255, (1, img_width, img_height, 3)) - 128.
 
 	for i in range(s.NUM_ITERATIONS):
