@@ -190,7 +190,7 @@ def main(trial_settings):
 if __name__ == "__main__":
 	main({
 		'content_img': 'bagend.jpg',
-		'content_weight': .0125,
+		'content_weight': 0.0,
 
 		'style_img': 'scream.jpg',
 		'style_weights': [.50, .50, .50, .50, .50]
