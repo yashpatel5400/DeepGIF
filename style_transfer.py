@@ -69,23 +69,18 @@ def gram_matrix(output):
 	flat_output = K.batch_flatten(output)
 	return K.dot(flat_output, K.transpose(flat_output))
 
-def style_loss(original_features, generated_features, weights):
-	cur_loss = K.variable(0.0)
-	for original_feature, generated_feature, weight in zip(original_features, 
-		generated_features, weights):
+def style_loss(original_feature, generated_feature):
+	shape = original_feature.get_shape()
+	# correspondingly the M_l and N_l from the paper description
+	img_size = (shape[0] * shape[1]).value
+	# num_filters = 3
+	num_filters = shape[2].value
 		
-		shape = original_feature.get_shape()
-		# correspondingly the M_l and N_l from the paper description
-		img_size = (shape[0] * shape[1]).value
-		# num_filters = 3
-		num_filters = shape[2].value
-		
-		G_orig = gram_matrix(original_feature)
-		G_gen  = gram_matrix(generated_feature)
-		cur_loss += weight * (1. / (4. * img_size ** 2 * 
-			num_filters ** 2)) * K.sum(K.square(G_orig - G_gen))
-	return cur_loss
-
+	G_orig = gram_matrix(original_feature)
+	G_gen  = gram_matrix(generated_feature)
+	return (1. / (4. * img_size ** 2 * 
+		num_filters ** 2)) * K.sum(K.square(G_orig - G_gen))
+	
 """
 # the gram matrix of an image tensor (feature-wise outer product)
 def gram_matrix(x):
@@ -130,8 +125,10 @@ def transform(content_features, content_weight, style_features, style_weights,
 
 	loss = K.variable(0.0)
 	# loss  +=  content_weight * content_loss(content_features, transform_features)
-	for style_feature, transform_feature in zip(style_features, transform_features):
-		loss  += style_loss(style_feature, transform_feature)
+	for style_feature, transform_feature, weight in zip(style_features, 
+		transform_features, style_weights):
+
+		loss  += weight * style_loss(style_feature, transform_feature)
 	# loss  += .125 * total_variation_loss(output_img)
 
 	grads = K.gradients(loss, output_img)[0]
