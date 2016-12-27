@@ -40,26 +40,18 @@ def deprocess_image(x):
 	return x
 
 # stores loss and gradients for efficiency
-class Evaluator(object):
+class GradLoss:
 	def __init__(self, iterate):
-		self.loss_value = None
-		self.grads_values = None
 		self.iterate = iterate
 
 	def loss(self, x):
 		x = x.reshape((1, WIDTH, HEIGHT, 3))
 		outs = self.iterate([x])
-		
-		self.loss_value = outs[0]
 		self.grad_values = np.array(outs[1:]).flatten().astype('float64')
-		return self.loss_value
+		return outs[0]
 
-	def grads(self, x):
-		grad_values = np.copy(self.grad_values)
-		
-		self.loss_value  = None
-		self.grad_values = None
-		return grad_values
+	def grad(self, x):
+		return self.grad_values
 
 # the following three functions are defined by their descriptions
 # from the "Style Transfer" paper
@@ -113,17 +105,12 @@ def transform(content_features, content_weight, style_features, style_weights,
 	img_width   = shape[1].value
 	img_height  = shape[2].value
 	
-	evaluator = Evaluator(iterate)
+	grad_loss = GradLoss(iterate)
 	input_img_data = np.random.uniform(0, 255, (1, img_width, img_height, 3)) - 128.
 
-	loss = lambda x : loss_grad[0]
-	grad = lambda x : np.array(loss_grad[1:]).flatten().astype('float64')
-
 	for i in range(s.NUM_ITERATIONS):
-		input_img_data = input_img_data.reshape((1, WIDTH, HEIGHT, 3))
-		loss_grad = iterate([input_img_data])
-		input_img_data, min_val, info = fmin_l_bfgs_b(loss, 
-			input_img_data.flatten(), fprime=grad, maxfun=20)
+		input_img_data, min_val, info = fmin_l_bfgs_b(grad_loss.loss, 
+			input_img_data.flatten(), fprime=grad_loss.grad, maxfun=20)
 		imsave("{}/{}-{}.png".format(s.OUTPUT_FINAL_DIR, 
 			output_name, i), deprocess_image(input_img_data.copy()))
 		print('Current loss value:', min_val)
