@@ -130,7 +130,8 @@ def transform(content_features, content_weight, style_features, style_weights,
 
 	loss = K.variable(0.0)
 	# loss  +=  content_weight * content_loss(content_features, transform_features)
-	loss  += style_loss(style_features, transform_features)
+	for style_features, transform_features in zip(style_features, transform_features):
+		loss  += style_loss(style_features, transform_features)
 	# loss  += .125 * total_variation_loss(output_img)
 
 	grads = K.gradients(loss, output_img)[0]
