@@ -76,8 +76,8 @@ def style_loss(original_features, generated_features, weights):
 		shape = original_feature.get_shape()
 		# correspondingly the M_l and N_l from the paper description
 		img_size = (shape[0] * shape[1]).value
-		num_filters = 3
-		# num_filters = shape[2].value
+		# num_filters = 3
+		num_filters = shape[2].value
 		
 		G_orig = gram_matrix(original_feature)
 		G_gen  = gram_matrix(generated_feature)
@@ -102,8 +102,9 @@ def total_variation_loss(generated_features):
 def transform(content_features, content_weight, style_features, style_weights, 
 	transform_features, output_img, output_name):
 
+	loss = K.variable(0.0)
 	# loss  =  content_weight * content_loss(content_features, transform_features)
-	loss  = style_loss(style_features, transform_features, style_weights)
+	loss  += style_loss(style_features, transform_features, style_weights)
 	# loss  += .125 * total_variation_loss(output_img)
 
 	grads = K.gradients(loss, output_img)[0]
