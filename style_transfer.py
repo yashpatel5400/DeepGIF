@@ -104,7 +104,7 @@ def transform(content_features, content_weight, style_features, style_weights,
 
 	loss  =  content_weight * content_loss(content_features, transform_features)
 	loss  += style_loss(style_features, transform_features, style_weights)
-	loss  += .125 * total_variation_loss(output_img)
+	# loss  += .125 * total_variation_loss(output_img)
 
 	grads = K.gradients(loss, output_img)[0]
 	# this function returns the loss and grads given the input picture
