@@ -99,12 +99,12 @@ def transform(content_features, content_weight, style_features, style_weights,
 	transform_features, output_img, output_name):
 
 	loss = K.variable(0.0)
-	# loss  +=  content_weight * content_loss(content_features, transform_features)
-	#for style_feature, transform_feature, weight in zip(style_features, 
-	#	transform_features, style_weights):
+	loss  +=  content_weight * content_loss(content_features, transform_features)
+	for style_feature, transform_feature, weight in zip(style_features, 
+		transform_features, style_weights):
 
-	#	loss  += weight * style_loss(style_feature, transform_feature)
-	loss  += .125 * total_variation_loss(output_img)
+		loss  += weight * style_loss(style_feature, transform_feature)
+	loss  += total_variation_loss(output_img)
 
 	grads = K.gradients(loss, output_img)[0]
 	# this function returns the loss and grads given the input picture
@@ -193,5 +193,5 @@ if __name__ == "__main__":
 		'content_weight': 0.00125,
 
 		'style_img': 'scream.jpg',
-		'style_weights': [.50, .50, .50, .50, .50]
+		'style_weights': [.25, .25, .25, .25, .25]
 	})
