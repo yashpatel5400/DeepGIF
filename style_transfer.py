@@ -117,7 +117,7 @@ def transform(content_features, content_weight, style_features, style_weights,
 	input_img_data = np.random.uniform(0, 255, (1, img_width, img_height, 3)) - 128.
 
 	loss = lambda x : loss_grad[0]
-	grad = lambda x : loss_grad[1]
+	grad = lambda x : np.array(loss_grad[1:]).flatten().astype('float64')
 
 	for i in range(s.NUM_ITERATIONS):
 		loss_grad = iterate([input_img_data])
