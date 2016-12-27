@@ -81,31 +81,6 @@ def style_loss(original_feature, generated_feature):
 	return (1. / (4. * img_size ** 2 * 
 		num_filters ** 2)) * K.sum(K.square(G_orig - G_gen))
 	
-"""
-# the gram matrix of an image tensor (feature-wise outer product)
-def gram_matrix(x):
-    assert K.ndim(x) == 3
-    if K.image_dim_ordering() == 'th':
-        features = K.batch_flatten(x)
-    else:
-        features = K.batch_flatten(K.permute_dimensions(x, (2, 0, 1)))
-    gram = K.dot(features, K.transpose(features))
-    return gram
-
-# the "style loss" is designed to maintain
-# the style of the reference image in the generated image.
-# It is based on the gram matrices (which capture style) of
-# feature maps from the style reference image
-# and from the generated image
-def style_loss(style, combination):
-    assert K.ndim(style) == 3
-    assert K.ndim(combination) == 3
-    S = gram_matrix(style)
-    C = gram_matrix(combination)
-    channels = 3
-    size = WIDTH * HEIGHT
-    return K.sum(K.square(S - C)) / (4. * (channels ** 2) * (size ** 2))
-"""
 def content_loss(original_features, generated_features):
 	original_content  = original_features[s.CONTENT_FEATURE_LAYER]
 	generated_content = generated_features[s.CONTENT_FEATURE_LAYER]
@@ -124,12 +99,12 @@ def transform(content_features, content_weight, style_features, style_weights,
 	transform_features, output_img, output_name):
 
 	loss = K.variable(0.0)
-	# loss  +=  content_weight * content_loss(content_features, transform_features)
+	loss  +=  content_weight * content_loss(content_features, transform_features)
 	for style_feature, transform_feature, weight in zip(style_features, 
 		transform_features, style_weights):
 
 		loss  += weight * style_loss(style_feature, transform_feature)
-	# loss  += .125 * total_variation_loss(output_img)
+	loss  += .125 * total_variation_loss(output_img)
 
 	grads = K.gradients(loss, output_img)[0]
 	# this function returns the loss and grads given the input picture
@@ -215,7 +190,7 @@ def main(trial_settings):
 if __name__ == "__main__":
 	main({
 		'content_img': 'bagend.jpg',
-		'content_weight': 0.0,
+		'content_weight': 0.05,
 
 		'style_img': 'scream.jpg',
 		'style_weights': [.50, .50, .50, .50, .50]
