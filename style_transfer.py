@@ -104,7 +104,7 @@ def transform(content_features, content_weight, style_features, style_weights,
 
 	loss  =  content_weight * content_loss(content_features, transform_features)
 	loss  += style_loss(style_features, transform_features, style_weights)
-	loss  += total_variation_loss(output_img)
+	loss  += .125 * total_variation_loss(output_img)
 
 	grads = K.gradients(loss, output_img)[0]
 	# this function returns the loss and grads given the input picture
@@ -190,7 +190,7 @@ def main(trial_settings):
 if __name__ == "__main__":
 	main({
 		'content_img': 'bagend.jpg',
-		'content_weight': .05,
+		'content_weight': .0125,
 
 		'style_img': 'scream.jpg',
 		'style_weights': [.50, .50, .50, .50, .50]
