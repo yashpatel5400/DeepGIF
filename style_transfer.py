@@ -97,14 +97,14 @@ def transform(content_features, content_weight, style_features, style_weights,
 	loss  += coherence_loss(output_img)
 
 	grads = K.gradients(loss, output_img)[0]
-	# this function returns the loss and grads given the input picture
-	iterate = K.function([output_img], [loss, grads])
+	
 
 	# step size for gradient ascent
 	shape = output_img.get_shape()
 	img_width   = shape[1].value
 	img_height  = shape[2].value
 	
+	iterate = K.function([output_img], [loss, grads])
 	grad_loss = GradLoss(iterate)
 	input_img_data = np.random.uniform(0, 255, (1, img_width, img_height, 3)) - 128.
 
@@ -180,7 +180,7 @@ def main(trial_settings):
 if __name__ == "__main__":
 	main({
 		'content_img': 'japan.jpg',
-		'content_weight': 0.0025,
+		'content_weight': 0.0050,
 
 		'style_img': 'bamboo.jpg',
 		'style_weights': [.25, .25, .25, .25, .25]
