@@ -108,7 +108,7 @@ def style_loss(style, combination):
     S = gram_matrix(style)
     C = gram_matrix(combination)
     channels = 3
-    size = img_nrows * img_ncols
+    size = WIDTH * HEIGHT
     return K.sum(K.square(S - C)) / (4. * (channels ** 2) * (size ** 2))
 
 def content_loss(original_features, generated_features):
@@ -130,8 +130,8 @@ def transform(content_features, content_weight, style_features, style_weights,
 
 	loss = K.variable(0.0)
 	# loss  +=  content_weight * content_loss(content_features, transform_features)
-	for style_features, transform_features in zip(style_features, transform_features):
-		loss  += style_loss(style_features, transform_features)
+	for style_feature, transform_feature in zip(style_features, transform_features):
+		loss  += style_loss(style_feature, transform_feature)
 	# loss  += .125 * total_variation_loss(output_img)
 
 	grads = K.gradients(loss, output_img)[0]
