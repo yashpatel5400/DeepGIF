@@ -102,7 +102,7 @@ def transform(content_features, content_weight, style_features, style_weights,
 		transform_features, style_weights):
 
 		loss  += weight * style_loss(style_feature, transform_feature)
-	# loss  += total_variation_loss(output_img)
+	loss  += total_variation_loss(output_img)
 
 	grads = K.gradients(loss, output_img)[0]
 	# this function returns the loss and grads given the input picture
@@ -118,7 +118,7 @@ def transform(content_features, content_weight, style_features, style_weights,
 
 	for i in range(s.NUM_ITERATIONS):
 		input_img_data, min_val, info = fmin_l_bfgs_b(evaluator.loss, 
-			input_img_data.flatten(), fprime=evaluator.grads, maxfun=20)
+			input_img_data.flatten(), maxfun=20)
 		imsave("{}/{}-{}.png".format(s.OUTPUT_FINAL_DIR, 
 			output_name, i), deprocess_image(input_img_data.copy()))
 		print('Current loss value:', min_val)
