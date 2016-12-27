@@ -120,9 +120,10 @@ def transform(content_features, content_weight, style_features, style_weights,
 	grad = lambda x : np.array(loss_grad[1:]).flatten().astype('float64')
 
 	for i in range(s.NUM_ITERATIONS):
+		input_img_data.reshape((1, WIDTH, HEIGHT, 3))
 		loss_grad = iterate([input_img_data])
 		input_img_data, min_val, info = fmin_l_bfgs_b(loss, 
-			input_img_data, fprime=grad, maxfun=20)
+			input_img_data.flatten(), fprime=grad, maxfun=20)
 		imsave("{}/{}-{}.png".format(s.OUTPUT_FINAL_DIR, 
 			output_name, i), deprocess_image(input_img_data.copy()))
 		print('Current loss value:', min_val)
