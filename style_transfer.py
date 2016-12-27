@@ -63,7 +63,7 @@ class Evaluator(object):
 
 # the following three functions are defined by their descriptions
 # from the "Style Transfer" paper
-"""
+
 def gram_matrix(output):
 	output = K.permute_dimensions(output, (2, 0, 1))
 	flat_output = K.batch_flatten(output)
@@ -82,11 +82,11 @@ def style_loss(original_features, generated_features, weights):
 		
 		G_orig = gram_matrix(original_feature)
 		G_gen  = gram_matrix(generated_feature)
-		cur_loss += weight * (1 / (4 * img_size ** 2 * 
+		cur_loss += weight * (1. / (4. * img_size ** 2 * 
 			num_filters ** 2)) * K.sum(K.square(G_orig - G_gen))
 	return cur_loss
-"""
 
+"""
 # the gram matrix of an image tensor (feature-wise outer product)
 def gram_matrix(x):
     assert K.ndim(x) == 3
@@ -110,7 +110,7 @@ def style_loss(style, combination):
     channels = 3
     size = WIDTH * HEIGHT
     return K.sum(K.square(S - C)) / (4. * (channels ** 2) * (size ** 2))
-
+"""
 def content_loss(original_features, generated_features):
 	original_content  = original_features[s.CONTENT_FEATURE_LAYER]
 	generated_content = generated_features[s.CONTENT_FEATURE_LAYER]
