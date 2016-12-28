@@ -219,12 +219,14 @@ def stylize_video(trial_settings):
 			count += 1
 	else:
 		count = len(os.listdir(input_dir)) + 1
+		print('Loaded cached frames...')
 
 	for file in range(count):
 		next_img = "{}.jpg.png".format(file)
 		if not os.path.exists("{}/{}".format(output_dir, next_img)):
 			trial_params['frame'] = next_img
 			stylize_image(trial_params, is_video=True)
+		print("Completed {}".format(file))
 
 	video = None
 	for file in os.listdir(output_dir):
