@@ -18,6 +18,7 @@ from keras.preprocessing import image
 from keras.applications.vgg19 import preprocess_input
 from keras.models import Model
 
+import cv2
 import PIL
 from PIL import Image
 from scipy.misc import imsave
@@ -89,7 +90,7 @@ def coherence_loss(generated_features):
 
 # adopted from: https://github.com/fchollet/keras/blob/master/examples/conv_filter_visualization.py
 def transform(content_features, content_weight, style_features, style_weights, 
-	transform_features, output_img, output_name):
+	transform_features, output_img, output_name, is_video):
 
 	loss = K.variable(0.0)
 	loss  +=  content_weight * content_loss(content_features, transform_features)
@@ -100,7 +101,6 @@ def transform(content_features, content_weight, style_features, style_weights,
 	loss  += coherence_loss(output_img)
 
 	grads = K.gradients(loss, output_img)[0]
-	
 
 	# step size for gradient ascent
 	shape = output_img.get_shape()
@@ -113,9 +113,15 @@ def transform(content_features, content_weight, style_features, style_weights,
 	for i in range(s.NUM_ITERATIONS):
 		input_img_data, min_val, info = fmin_l_bfgs_b(grad_loss.loss, 
 			input_img_data.flatten(), fprime=grad_loss.grad, maxfun=20)
-		imsave("{}/{}-{}.png".format(s.OUTPUT_FINAL_DIR, 
-			output_name, i), deprocess_image(input_img_data.copy()))
+
+		if not is_video:
+			imsave("{}/{}-{}.png".format(s.OUTPUT_FINAL_DIR, 
+				output_name, i), deprocess_image(input_img_data.copy()))
 		print('Current loss value:', min_val)
+	# only save the actual frame if processing a video
+	if is_video:
+		imsave("{}/{}.png".format(s.OUTPUT_FRAME_DIR, 
+			output_name), deprocess_image(input_img_data.copy()))
 
 def img_tensor(filename):
 	global WIDTH
@@ -134,8 +140,8 @@ def img_tensor(filename):
 	img_arr = preprocess_input(img_arr)
 	return K.variable(img_arr)
 
-def stylize_image(trial_settings):
-	content_img	   = trial_settings['content_img']
+def stylize_image(trial_settings, is_video=False):
+	content_img	   = trial_settings['content_input']
 	content_weight = trial_settings['content_weight']
 	style_img	   = trial_settings['style_img']
 	style_weights  = trial_settings['style_weights']
@@ -145,8 +151,16 @@ def stylize_image(trial_settings):
 
 	model_input = []
 	# input image: content
-	content_img_tensor = img_tensor("{}/{}".format(
-		s.INPUT_CONTENT_DIR, content_img))
+	if not is_video:
+		input_file = "{}/{}".format(s.INPUT_CONTENT_DIR, content_img)
+		final_name = combined_name
+	else: 
+		frame = trial_params['frame']
+		input_file = "{}/{}/{}".format(s.INPUT_FRAME_DIR, 
+			combined_name, frame)
+		final_name = "{}/{}".format(combined_name, frame)
+
+	content_img_tensor = img_tensor(input_file)
 	model_input.append(content_img_tensor)
 
 	# input image: style
@@ -176,50 +190,65 @@ def stylize_image(trial_settings):
 		style_features.append(features[1,:,:,:])
 		transform_features.append(features[2,:,:,:])
 
-	transform(content_features, content_weight, style_features, 
-		style_weights, transform_features, transform_image_tensor, combined_name)
+	transform(content_features, content_weight, style_features, style_weights, 
+		transform_features, transform_image_tensor, final_name, is_video)
 
-def stylize_video(video_file, trial_settings):
-	style_img	   = trial_settings['style_img']
+def stylize_video(trial_settings):
+	style_img  = trial_settings['style_img']
+	video_file = trial_settings['content_input']
+
 	combined_name = "{}-{}".format(video_file.split(".")[0], 
 		style_img.split(".")[0])
 
+	input_dir = "{}/{}".format(s.INPUT_FRAME_DIR, combined_name)
 	output_dir = "{}/{}".format(s.OUTPUT_FRAME_DIR, combined_name)
-	if not os.path.exists(output_dir):
-		os.makedirs(directory)
 
-		vidcap = cv2.VideoCapture(video_file)
+	if not os.path.exists(output_dir):
+		os.makedirs(output_dir)
+
+	if not os.path.exists(input_dir):
+		os.makedirs(input_dir)
+
+		vidcap = cv2.VideoCapture("{}/{}".format(s.INPUT_CONTENT_DIR, video_file))
 		success, image = vidcap.read()
 		count = 0
 		while success:
 			print('Read a new frame: {}'.format(success))
-			cv2.imwrite("{}/{}-{}.jpg".format(s.INPUT_FRAME_DIR, 
-				combined_name, count))
+			cv2.imwrite("{}/{}.jpg".format(input_dir, count), image)
 			success, image = vidcap.read()
 			count += 1
 	else:
-		count = len(os.listdir(output_dir)) + 1
+		count = len(os.listdir(input_dir)) + 1
 
 	for file in range(count):
-		img = cv2.imread("{}/{}-{}.jpg".format(s.INPUT_FRAME_DIR, 
-			combined_name, file))
-		
+		trial_params['frame'] = "{}.jpg".format(file)
+		stylize_image(trial_params, is_video=True)
 
-	height, width, layers =  img1.shape
-	video = cv2.VideoWriter('video.avi',-1,1,(width,height))
-
-	video.write(img1)
-	video.write(img2)
-	video.write(img3)
-
+	video = None
+	for file in os.listdir(output_dir):
+		img = cv2.imread("{}/{}".format(output_dir, file))
+		if video is None:	
+			height, width, layers = img.shape
+			video = cv2.VideoWriter('{}.avi'.format(combined_name), 
+				-1, 1, (width, height))
+		video.write(img)
+	
 	cv2.destroyAllWindows()
 	video.release()
 
 if __name__ == "__main__":
-	stylize_image({
-		'content_img': 'nature.jpg',
+	trial_params = {
+		'is_video': True,
+		# only used for the video stylizations
+		'frame': None,
+
+		'content_input': 'starwars.gif',
 		'content_weight': 0.025,
 
 		'style_img': 'scream.jpg',
 		'style_weights': [.75, .75, .75, .75, .75]
-	})
+	}
+
+	if trial_params['is_video']:
+		stylize_video(trial_params)
+	else: stylize_image(trial_params, is_video=False)
