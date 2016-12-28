@@ -40,6 +40,7 @@ def deprocess_image(x):
 	return x
 
 # stores loss and gradients for efficiency
+# adopted from https://github.com/fchollet/keras/blob/master/examples/neural_style_transfer.py
 class GradLoss:
 	def __init__(self, iterate):
 		self.iterate = iterate
@@ -77,6 +78,7 @@ def content_loss(original_features, generated_features):
 	return K.sum(K.square(original_content - generated_content))
 
 # additional loss function that reduces pixelation
+# from https://github.com/fchollet/keras/blob/master/examples/neural_style_transfer.py
 def coherence_loss(generated_features):
 	a = K.square(generated_features[:, :WIDTH-1, :HEIGHT-1, :] - 
 		generated_features[:, 1:, :HEIGHT-1, :])
@@ -178,9 +180,9 @@ def main(trial_settings):
 
 if __name__ == "__main__":
 	main({
-		'content_img': 'italy.png',
+		'content_img': 'japan.jpg',
 		'content_weight': 0.005,
 
-		'style_img': 'starry_night.jpg',
+		'style_img': 'bokeh.jpg',
 		'style_weights': [.50, .50, .50, .50, .50]
 	})
