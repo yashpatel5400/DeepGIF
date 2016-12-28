@@ -219,10 +219,12 @@ def stylize_video(trial_settings):
 			count += 1
 	else:
 		count = len(os.listdir(input_dir)) + 1
-	print(count)
+
 	for file in range(count):
-		trial_params['frame'] = "{}.jpg".format(file)
-		stylize_image(trial_params, is_video=True)
+		next_img = "{}.jpg".format(file)
+		if not os.path.exists("{}/{}".format(output_dir, next_img)):
+			trial_params['frame'] = next_img
+			stylize_image(trial_params, is_video=True)
 
 	video = None
 	for file in os.listdir(output_dir):
