@@ -21,6 +21,9 @@ INPUT_CONTENT_DIR = './input/content/'
 INPUT_STYLE_DIR = './input/style/'
 
 # ------------------------- Output Global Variables --------------------------#
+# location where a video file is broke into its constituent frames
+OUTPUT_FRAME_DIR = './results/frames/'
+
 # location where the content reconstructions are saved
 OUTPUT_CONTENT_DIR = './results/content/'
 

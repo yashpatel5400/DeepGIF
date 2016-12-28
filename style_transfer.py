@@ -8,6 +8,7 @@ test image to verify working
 import settings as s
 
 import numpy as np
+import os
 from random import shuffle
 from scipy.optimize import fmin_l_bfgs_b
 
@@ -133,8 +134,8 @@ def img_tensor(filename):
 	img_arr = preprocess_input(img_arr)
 	return K.variable(img_arr)
 
-def main(trial_settings):
-	content_img	= trial_settings['content_img']
+def stylize_image(trial_settings):
+	content_img	   = trial_settings['content_img']
 	content_weight = trial_settings['content_weight']
 	style_img	   = trial_settings['style_img']
 	style_weights  = trial_settings['style_weights']
@@ -178,11 +179,44 @@ def main(trial_settings):
 	transform(content_features, content_weight, style_features, 
 		style_weights, transform_features, transform_image_tensor, combined_name)
 
-if __name__ == "__main__":
-	main({
-		'content_img': 'wolf.jpg',
-		'content_weight': 0.00125,
+def stylize_video(video_file, trial_settings):
+	style_img	   = trial_settings['style_img']
+	combined_name = "{}-{}".format(video_file.split(".")[0], 
+		style_img.split(".")[0])
 
-		'style_img': 'mario.jpg',
+	output_dir = "{}/{}".format(s.OUTPUT_FRAME_DIR, combined_name)
+	if not os.path.exists(output_dir):
+		os.makedirs(directory)
+
+		vidcap = cv2.VideoCapture(video_file)
+		success, image = vidcap.read()
+		count = 0
+		while success:
+			print('Read a new frame: {}'.format(success))
+			cv2.imwrite("{}/{}-{}.jpg".format(s.OUTPUT_FRAME_DIR, 
+				combined_name, count))
+			success, image = vidcap.read()
+			count += 1
+	else:
+		count = len(os.listdir(output_dir)) + 1
+
+	for file in range(count):
+	img1 = cv2.imread('1.jpg')
+	height, width, layers =  img1.shape
+	video = cv2.VideoWriter('video.avi',-1,1,(width,height))
+
+	video.write(img1)
+	video.write(img2)
+	video.write(img3)
+
+	cv2.destroyAllWindows()
+	video.release()
+
+if __name__ == "__main__":
+	stylize_image({
+		'content_img': 'wolf.jpg',
+		'content_weight': 0.0025,
+
+		'style_img': 'bamboo.jpg',
 		'style_weights': [.75, .75, .75, .75, .75]
 	})
