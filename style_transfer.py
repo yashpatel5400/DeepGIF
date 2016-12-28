@@ -201,9 +201,9 @@ def stylize_video(video_file, trial_settings):
 		count = len(os.listdir(output_dir)) + 1
 
 	for file in range(count):
-	img1 = cv2.imread('1.jpg')
-	height, width, layers =  img1.shape
-	video = cv2.VideoWriter('video.avi',-1,1,(width,height))
+		img1 = cv2.imread('1.jpg')
+		height, width, layers =  img1.shape
+		video = cv2.VideoWriter('video.avi',-1,1,(width,height))
 
 	video.write(img1)
 	video.write(img2)
