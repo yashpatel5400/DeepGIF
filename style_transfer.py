@@ -193,7 +193,7 @@ def stylize_video(video_file, trial_settings):
 		count = 0
 		while success:
 			print('Read a new frame: {}'.format(success))
-			cv2.imwrite("{}/{}-{}.jpg".format(s.OUTPUT_FRAME_DIR, 
+			cv2.imwrite("{}/{}-{}.jpg".format(s.INPUT_FRAME_DIR, 
 				combined_name, count))
 			success, image = vidcap.read()
 			count += 1
@@ -201,9 +201,12 @@ def stylize_video(video_file, trial_settings):
 		count = len(os.listdir(output_dir)) + 1
 
 	for file in range(count):
-		img1 = cv2.imread('1.jpg')
-		height, width, layers =  img1.shape
-		video = cv2.VideoWriter('video.avi',-1,1,(width,height))
+		img = cv2.imread("{}/{}-{}.jpg".format(s.INPUT_FRAME_DIR, 
+			combined_name, file))
+		
+
+	height, width, layers =  img1.shape
+	video = cv2.VideoWriter('video.avi',-1,1,(width,height))
 
 	video.write(img1)
 	video.write(img2)
@@ -214,9 +217,9 @@ def stylize_video(video_file, trial_settings):
 
 if __name__ == "__main__":
 	stylize_image({
-		'content_img': 'wolf.jpg',
-		'content_weight': 0.0025,
+		'content_img': 'nature.jpg',
+		'content_weight': 0.025,
 
-		'style_img': 'bamboo.jpg',
+		'style_img': 'scream.jpg',
 		'style_weights': [.75, .75, .75, .75, .75]
 	})
