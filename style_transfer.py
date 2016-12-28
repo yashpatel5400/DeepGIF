@@ -180,9 +180,9 @@ def main(trial_settings):
 
 if __name__ == "__main__":
 	main({
-		'content_img': 'japan.jpg',
-		'content_weight': 0.005,
+		'content_img': 'wolf.jpg',
+		'content_weight': 0.00125,
 
-		'style_img': 'bokeh.jpg',
-		'style_weights': [.50, .50, .50, .50, .50]
+		'style_img': 'mario.jpg',
+		'style_weights': [.75, .75, .75, .75, .75]
 	})
