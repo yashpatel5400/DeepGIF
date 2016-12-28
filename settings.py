@@ -20,15 +20,12 @@ INPUT_CONTENT_DIR = './input/content/'
 # location where the style inputs are saved
 INPUT_STYLE_DIR = './input/style/'
 
-# ------------------------- Output Global Variables --------------------------#
 # location where a video file is broke into its constituent frames
+INPUT_FRAME_DIR = './input/frames/'
+
+# ------------------------- Output Global Variables --------------------------#
+# location where analyzed/stylized video frames are saved
 OUTPUT_FRAME_DIR = './results/frames/'
-
-# location where the content reconstructions are saved
-OUTPUT_CONTENT_DIR = './results/content/'
-
-# location where the style reconstructions are saved
-OUTPUT_STYLE_DIR = './results/style/'
 
 # location where the overall (final) style transfers are saved
 OUTPUT_FINAL_DIR = './results/final/'
