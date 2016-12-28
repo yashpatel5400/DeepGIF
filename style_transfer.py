@@ -222,15 +222,15 @@ def stylize_video(trial_settings):
 		print('Loaded cached frames...')
 
 	for file in range(count):
-		next_img = "{}.jpg.png".format(file)
-		if not os.path.exists("{}/{}".format(output_dir, next_img)):
+		next_img = "{}.jpg".format(file)
+		if not os.path.exists("{}/{}.png".format(output_dir, next_img)):
 			trial_params['frame'] = next_img
 			stylize_image(trial_params, is_video=True)
 		print("Completed {}".format(file))
 
 	video = None
 	for file in os.listdir(output_dir):
-		img = cv2.imread("{}/{}".format(output_dir, file))
+		img = cv2.imread("{}/{}.png".format(output_dir, file))
 		if video is None:	
 			height, width, layers = img.shape
 			video = cv2.VideoWriter('{}.avi'.format(combined_name), 
