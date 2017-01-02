@@ -35,8 +35,6 @@ Documentation
 
 The full documentation can be generated with Sphinx"""
 
-history = open('HISTORY.rst').read().replace('.. :changelog:', '')
-
 requires = [] #during runtime
 tests_require=['pytest>=2.3'] #for testing
 
