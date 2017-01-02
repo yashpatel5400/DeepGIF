@@ -43,5 +43,5 @@ output/*/index.html
 
 # Sphinx
 docs/_build
-/unet_trained/
+# /unet_trained/
 /prediction/
