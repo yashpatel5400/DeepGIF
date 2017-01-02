@@ -44,7 +44,7 @@ setup(
     name='tf_unet',
     version='0.1.0',
     description='Unet TensorFlow implementation',
-    long_description=readme + '\n\n' + doclink + '\n\n' + history,
+    long_description=readme + '\n\n' + doclink,
     author='Joel Akeret',
     author_email='jakeret@phys.ethz.ch',
     url='https://github.com/jakeret/tf_unet',
