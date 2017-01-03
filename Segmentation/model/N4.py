@@ -1,18 +1,52 @@
-import tensorflow as tf
-from model.common import conv2d, bias_variable, weight_variable, max_pool
+from keras.models import Sequential
+from keras.layers.core import Activation, Dense
+from keras.layers.convolutional import Convolution2D, MaxPooling2D
 
 def default_N4():
     params = {
-        'm1': 48,
-        'm2': 48,
-        'm3': 48,
-        'm4': 48,
+        'fs1': 96,
+        'fs2': 128,
+        'fs3': 256,
+
+        'k1': 7,
+        'k2': 5,
+        'k3': 3,
+
         'fc': 200,
         'lr': 0.001,
         'out': 101
     }
     return N4(params)
 
+class N4:
+    def ConvActivPoolLayer(model, filter_size, kernel_size, include_pool=True):
+        model.add(Convolution2D(filter_size, kernel_size, kernel_size,
+            border_mode='valid'))
+        model.add(Activation('relu'))
+        model.add(MaxPooling2D(pool_size=(2, 2)))
+
+    def __init__(self, params):
+        filter_1 = params['fs1']
+        filter_2 = params['fs2']
+        filter_3 = params['fs3']
+
+        kernel_1 = params['k1']
+        kernel_2 = params['k2']
+        kernel_3 = params['k3']
+        
+        fc = params['fc']
+        learning_rate = params['lr']
+
+        model = Sequential()
+        model.add(Layer(input_shape=(None, None, 3)))
+        
+        ConvActivPoolLayer(model, filter_size=map_1, kernel_size=kernel_1)
+        ConvActivPoolLayer(model, filter_size=map_2, kernel_size=kernel_2)
+        ConvActivPoolLayer(model, filter_size=map_3, kernel_size=kernel_3, 
+            include_pool=False)
+
+        model.add(Dense())
+        return model
 
 class N4:
     def __init__(self, params):
