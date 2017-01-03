@@ -4,9 +4,7 @@ Video style transfer using convolutional networks, with tracking and masks. Impl
 ### Requirement ###
 
 - Python >=3.4
-  - TensorFlow 0.11.0
-- Node >=6.9
-
+  - TensorFlow 0.12.0
 
 ### How to run ###
 
