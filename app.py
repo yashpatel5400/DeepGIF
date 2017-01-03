@@ -53,7 +53,7 @@ def upload_file():
         extension = file_extension(original_image)
         file.save(os.path.join(app.config['UPLOAD_FOLDER'], original_image))
         # do segmentation, save images to temp folder
-        for i in xrange(5):
+        for i in range(5):
             filename = file_name_generator() + '.' + extension
             image = Image.new("RGB", (400, 400), color_generator())
             image.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
