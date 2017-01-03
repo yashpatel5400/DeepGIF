@@ -2,7 +2,7 @@ numpy==1.11.2
 scipy==0.18.1
 keras==1.2.0
 tensorflow==0.12.1
-PIL==1.1.7
+http://effbot.org/media/downloads/Imaging-1.1.7.tar.gz
 click==6.6
 cycler==0.10.0
 eventlet==0.19.0
