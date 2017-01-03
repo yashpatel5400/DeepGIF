@@ -1,9 +1,9 @@
 """
 __author__ = Yash Patel, Richard Du, and Jason Shi
-__description__ = Global variable declarations (module-level) for SegNet
+__description__ = Global variable declarations (module-level) for segmentation
 """
 
-# -------------------- Simulation Global Variables ---------------------------#
+# -------------------- Segnet Global Variables ------------------------------#
 # size of convolution kernels
 KERNEL = 8
 
@@ -13,31 +13,29 @@ PAD = 1
 # side length for the max pooling window
 POOL_SIZE = 2
 
-# number of training epochs
-NB_EPOCH = 100
+# -------------------- Input Img Global Variables ---------------------------#
+# training images split (in corresponding input directory)
+TRAIN = 'train/'
 
-# batch size for training input
-BATCH_SIZE = 14
+# test images split (in corresponding input directory)
+TEST = 'test/'
 
-# ----------------------- Simulation Input Image -----------------------------#
-# input/output image width
-WIDTH = 320
+# validation images split (in corresponding input directory)
+VAL = 'val/'
 
-# input/output image height
-HEIGHT = 480
+# -------------------- Input Directory Global Variables ---------------------#
+# number of segmentations for each raw image
+RAW_SEGMENTATION_SIZE = 4
 
-# ----------------------- Network Training Parameters ------------------------#
-# number of output classes (softmax over 12 classifications)
-NUM_CLASSES = 12
+# raw images and matrix files
+RAW_INPUT_DIR = './input/raw/'
 
-# number of training images
-TRAINING_INP_SIZE = 367
+# edge files (i.e. for training N4 and UNet)
+EDGE_INPUT_DIR = './input/edges/'
 
-# training/testing/validation data directory
-DATA_DIRECTORY = './CamVid/'
+# segmented files (i.e. for training SegNet)
+SEGMENTS_INPUT_DIR = './input/segments/'
 
-# ignores the root directory when obtaining training data
-IGNORE_ROOT = 7
-
-# weights caching (after training)
-OUTPUT_FILE = 'model_weights.hdf5'
+# -------------------- Input Data File Extensions ---------------------------#
+# extensions for how the truths are provided in DB
+INPUT_MAT = 'mat'
