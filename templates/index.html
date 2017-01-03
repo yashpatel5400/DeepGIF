@@ -1,0 +1,101 @@
+<!-- JQuery CDN -->
+<script
+	src="https://code.jquery.com/jquery-3.1.1.min.js"
+	integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+	crossorigin="anonymous">
+</script>
+
+<!-- Skeleton CSS -->
+<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='css/skeleton.css')}}">
+
+<!-- Application root URL -->
+<script type=text/javascript>
+  $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+</script>
+<script type="text/javascript">
+	$(document).ready(function() {
+    $('#upload-file-btn').click(function() {
+        var form_data = new FormData($('#upload-file')[0]);
+        $.ajax({
+            type: 'POST',
+            url: $SCRIPT_ROOT + '/_image_segmentation',
+            data: form_data,
+            contentType: false,
+            cache: false,
+            processData: false,
+            async: false,
+            success: function(data) {
+        		$("#segments").html(data);
+        		// Adds click handler to generate button
+        		$('#generate').click(function() {
+					options = {};
+					$(".segment select").each(function()
+					{
+						options[$(this).attr("name")] = $(this).val();
+					});
+					$.ajax({
+						type: "POST",
+						url: $SCRIPT_ROOT + '/_style_transfer',
+						data: JSON.stringify(options),
+						contentType: 'application/json',
+						success: function(data) {
+							$("#new_image").html(data);
+						}
+					});
+				});
+            },
+        });
+    });
+	});
+</script>
+<style>
+	#file{
+
+	}
+
+	#original_image img{
+		display:block;
+		margin-left:auto;
+		margin-right:auto;
+		max-width: 100%;
+		max-height: 100%;
+	}
+	.row{
+		margin: 10px 0 10px 0;
+		text-align: center;
+	}
+
+    .segment{
+		display: inline-block;
+		width: 33%;
+	}
+	.segment select{
+		display: block;
+		width: 100%;
+	}
+	.segment img{
+		display:block;
+		margin-left:auto;
+		margin-right:auto;
+		max-width: 100%;
+		max-height: 100%;
+	}
+</style>
+<body>
+	<div class="container">
+		<div class="row" id="upload-form">
+			<div class="twelve columns">
+				<form id="upload-file" method="post" enctype="multipart/form-data">
+			        <input class="" name="file" type="file" id="file">
+			        <button id="upload-file-btn" type="button">Upload</button>    
+				</form>
+			</div>
+		</div>
+		<div id="segments">
+			
+		</div>
+		<div class="row" id="new_image">
+			
+		</div>
+	</div>
+</body>
