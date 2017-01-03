@@ -1,4 +1,16 @@
-from keras.models import Sequential
+"""
+__author__ = Yash Patel, Richard Du, and Jason Shi
+__description__ = Neural network implementation of the N4 architecture.
+Used for segmented images into edge maps, which then feeds into watershed
+for final area segmentation.
+"""
+
+import settings as s
+
+import os
+import cv2
+
+from keras.models import Sequential, load_model
 from keras.layers.core import Activation, Dense
 from keras.layers.convolutional import Convolution2D, MaxPooling2D
 
@@ -12,18 +24,68 @@ def default_N4():
         'k2': 5,
         'k3': 3,
 
-        'fc': 200,
-        'lr': 0.001,
-        'out': 101
+        'fc1': 768,
+        'fc2': 768,
+        'fc3': 16,
+
+        'lr': 0.1
     }
     return N4(params)
 
 class N4:
-    def ConvActivPoolLayer(model, filter_size, kernel_size, include_pool=True):
-        model.add(Convolution2D(filter_size, kernel_size, kernel_size,
-            border_mode='valid'))
-        model.add(Activation('relu'))
-        model.add(MaxPooling2D(pool_size=(2, 2)))
+    def train(self):
+        # -------------------- Training Procedure ----------------------------#
+        print("Loading training files...")
+        X_train_files = os.listdir("{}{}".format(s.RAW_INPUT_DIR, s.TRAIN))
+        y_train_files = os.listdir("{}{}".format(s.EDGE_INPUT_DIR, s.TRAIN))
+
+        X_train = [cv2.imread(train_file) for train_file in X_train_files]
+        y_reg_train = [cv2.imread(train_file) for train_file in y_train_files 
+            if train_file.split(".")[-1] == "jpg"]
+
+        # since each training image corresponds to four "truth images", we copy
+        y_train = [img for img in y_reg_train 
+            for _ in range(s.RAW_SEGMENTATION_SIZE)]
+
+        print("Performing training...")
+        sgd = SGD(lr=self.learning_rate, decay=1e-6, momentum=0.9)
+        self.model.compile(loss='mean_absolute_error',
+                      optimizer=sgd,
+                      metrics=['accuracy'])
+        self.model.fit(X_train, y_train, nb_epoch=20, batch_size=16)
+
+        print("Saving model...")
+        cache_path = "{}{}.h5".format(s.MODEL_CACHE, self.model_name)
+        self.model.save_weights(cache_path)
+
+        # ---------------- Testing/Validation Procedure ----------------------#
+        print("Loading testing files...")
+        X_test_files = os.listdir("{}{}".format(s.RAW_INPUT_DIR, s.TEST))
+        y_test_files = os.listdir("{}{}".format(s.EDGE_INPUT_DIR, s.TEST))
+
+        X_single_imgs = ["{}-0.jpg"(test_file.split("-")[0]) for 
+            test_file in X_test_files]
+        X_test = [cv2.imread(img) for img in X_single_imgs]
+        y_test = [cv2.imread(test_file) for test_file in y_test_files 
+            if test_file.split(".")[-1] == "jpg"]
+        score = self.model.evaluate(X_test, y_test, batch_size=16)
+
+    def predict(self, input_image):
+        cache_path = "{}{}.h5".format(s.MODEL_CACHE, self.model_name)
+        if os.path.exists(cache_path):
+            self.model.load_weights(cache_path)
+
+        filename = input_image.split(".")[0]
+
+        image = cv2.imread("{}{}{}".format(s.RAW_INPUT_DIR, 
+            s.TEST, input_image), cv2.IMREAD_COLOR)
+        dest_shape = image.shape
+        dest = np.zeros(dest_shape)
+
+        norm_image = cv2.normalize(image, dest, alpha=0, beta=1, 
+            norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F)
+        edge_img = self.model.predict(norm_image)
+        imsave("{}{}".format(s.OUTPUT_DIR, filename), edge_img)
 
     def __init__(self, params):
         filter_1 = params['fs1']
@@ -33,97 +95,30 @@ class N4:
         kernel_1 = params['k1']
         kernel_2 = params['k2']
         kernel_3 = params['k3']
+
+        full_connected_1 = params['fc1']
+        full_connected_2 = params['fc2']
+        full_connected_3 = params['fc3']
         
-        fc = params['fc']
-        learning_rate = params['lr']
-
-        model = Sequential()
-        model.add(Layer(input_shape=(None, None, 3)))
+        self.model_name    = "n4"
+        self.learning_rate = params['lr']
+        self.model = Sequential()
+        self.model.add(Layer(input_shape=(None, None, 3)))
         
-        ConvActivPoolLayer(model, filter_size=map_1, kernel_size=kernel_1)
-        ConvActivPoolLayer(model, filter_size=map_2, kernel_size=kernel_2)
-        ConvActivPoolLayer(model, filter_size=map_3, kernel_size=kernel_3, 
-            include_pool=False)
+        # 1st convolution layer -- with pooling
+        self.model.add(Convolution2D(map_1, kernel_1, kernel_1,
+            border_mode='same', activation='relu'))
+        self.model.add(MaxPooling2D(pool_size=(2, 2)))
 
-        model.add(Dense())
-        return model
+        # 2nd convolution layer -- with pooling
+        self.model.add(Convolution2D(map_2, kernel_2, kernel_2,
+            border_mode='same', activation='relu'))
+        self.model.add(MaxPooling2D(pool_size=(2, 2)))
 
-class N4:
-    def __init__(self, params):
+        # 3rd convolution layer -- no pooling
+        self.model.add(Convolution2D(map_3, kernel_3, kernel_3,
+            border_mode='same', activation='relu'))
 
-        # Hyperparameters
-        map_1 = params['m1']
-        map_2 = params['m2']
-        map_3 = params['m3']
-        map_4 = params['m4']
-        fc = params['fc']
-        learning_rate = params['lr']
-        self.out = params['out']
-        self.fov = 95
-        self.inpt = self.fov + 2 * (self.out // 2)
-
-        # layer 0
-        # Normally would have shape [1, inpt, inpt, 1], but None allows us to have a flexible validation set
-        self.image = tf.placeholder(tf.float32, shape=[None, None, None, 1])
-        self.target = tf.placeholder(tf.float32, shape=[None, None, None, 2])
-
-        # layer 1 - original stride 1
-        W_conv1 = weight_variable([4, 4, 1, map_1])
-        b_conv1 = bias_variable([map_1])
-        h_conv1 = tf.nn.relu(conv2d(self.image, W_conv1, dilation=1) + b_conv1)
-
-        # layer 2 - original stride 2
-        h_pool1 = max_pool(h_conv1, strides=[1, 1], dilation=1)
-
-        # layer 3 - original stride 1
-        W_conv2 = weight_variable([5, 5, map_1, map_2])
-        b_conv2 = bias_variable([map_2])
-        h_conv2 = tf.nn.relu(conv2d(h_pool1, W_conv2, dilation=2) + b_conv2)
-
-        # layer 4 - original stride 2
-        h_pool2 = max_pool(h_conv2, strides=[1, 1], dilation=2)
-
-        # layer 5 - original stride 1
-        W_conv3 = weight_variable([4, 4, map_2, map_3])
-        b_conv3 = bias_variable([map_3])
-        h_conv3 = tf.nn.relu(conv2d(h_pool2, W_conv3, dilation=4) + b_conv3)
-
-        # layer 6 - original stride 2
-        h_pool3 = max_pool(h_conv3, strides=[1, 1], dilation=4)
-
-        # layer 7 - original stride 1
-        W_conv4 = weight_variable([4, 4, map_3, map_4])
-        b_conv4 = bias_variable([map_4])
-        h_conv4 = tf.nn.relu(conv2d(h_pool3, W_conv4, dilation=8) + b_conv4)
-
-        # layer 8 - original stride 2
-        h_pool4 = max_pool(h_conv4, strides=[1, 1], dilation=8)
-
-        # layer 9 - original stride 1
-        W_fc1 = weight_variable([3, 3, map_4, fc])
-        b_fc1 = bias_variable([fc])
-        h_fc1 = tf.nn.relu(conv2d(h_pool4, W_fc1, dilation=16) + b_fc1)
-
-        # layer 10 - original stride 2
-        W_fc2 = weight_variable([1, 1, fc, 2])
-        b_fc2 = bias_variable([2])
-        self.prediction = conv2d(h_fc1, W_fc2, dilation=16) + b_fc2
-
-        self.sigmoid_prediction = tf.nn.sigmoid(self.prediction)
-        self.cross_entropy = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(self.prediction, self.target))
-        self.train_step = tf.train.AdamOptimizer(learning_rate).minimize(self.cross_entropy)
-
-        self.loss_summary = tf.summary.scalar('cross_entropy', self.cross_entropy)
-        self.binary_prediction = tf.round(self.sigmoid_prediction)
-        self.pixel_error = tf.reduce_mean(tf.cast(tf.abs(self.binary_prediction - self.target), tf.float32))
-        self.pixel_error_summary = tf.summary.scalar('pixel_error', self.pixel_error)
-        
-        self.summary_op = tf.summary.merge([
-            self.loss_summary,
-            self.pixel_error_summary
-        ])
-
-        # Add ops to save and restore all the variables.
-        self.saver = tf.train.Saver()
-        self.model_name = str.format('out-{}_lr-{}_m1-{}_m2-{}_m3-{}_m4-{}_fc-{}', self.out, learning_rate, map_1,
-                                     map_2, map_3, map_4, fc)
+        self.model.add(Dense(full_connected_1, activation='relu'))
+        self.model.add(Dense(full_connected_2, activation='relu'))
+        self.model.add(Dense(full_connected_3))

@@ -1,5 +1,8 @@
-# -*- coding: utf-8 -*-
-from __future__ import print_function
+"""
+__author__ = Yash Patel, Richard Du, and Jason Shi
+__description__ = Client for using the segmentation portion of the
+program, including doing the segmentation and watershed on input images.
+"""
 
 import click
 import learner
@@ -24,19 +27,17 @@ def train(dataset):
     """
     Train an N4 models to predict affinities
     """
-    data_folder = '/' + dataset + '/'
-    data_provider = DPTransformer(data_folder, 'train.spec')
-
-    learner.train(default_N4(), data_provider, data_folder, n_iterations=10000)
+    N4 = default_N4()
+    N4.train()
 
 @cli.command()
-@click.argument('dataset', type=click.Choice(['edge', 'full']))
-def predict():
+@click.argument('input_img')
+def predict(input_img):
     """
     Realods a model previously trained
     """
-    data_folder = './'
-    learner.predict(default_N4(), data_folder, "kiwi.jpg")
+    N4 = default_N4()
+    N4.predict(input_img)
 
 if __name__ == '__main__':
     cli()

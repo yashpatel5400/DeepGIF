@@ -1,3 +1,9 @@
+"""
+__author__ = Yash Patel, Richard Du, and Jason Shi
+__description__ = Preprocessing of images (testing/training/validation) that
+is used for N4 edge detection
+"""
+
 import settings as s
 
 import os
@@ -16,10 +22,7 @@ def preprocess_imgs():
 		filenames = [file for file in files if file.split(".")[-1] == s.INPUT_MAT]
 
 		for file in filenames:
-			# img_file   = "{}{}{}".format(cur_dir, file, s.INPUT_IMG)
 			truth_file = "{}{}".format(cur_dir, file)
-
-			# img = cv2.imread(img_file)
 			truth = scipy.io.loadmat(truth_file)
 			for segment in range(s.RAW_SEGMENTATION_SIZE):
 				segments = truth['groundTruth'][0, segment][0][0][0]

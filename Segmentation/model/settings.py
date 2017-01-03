@@ -28,13 +28,20 @@ VAL = 'val/'
 RAW_SEGMENTATION_SIZE = 4
 
 # raw images and matrix files
-RAW_INPUT_DIR = './input/raw/'
+RAW_INPUT_DIR = '../input/raw/'
 
 # edge files (i.e. for training N4 and UNet)
-EDGE_INPUT_DIR = './input/edges/'
+EDGE_INPUT_DIR = '../input/edges/'
 
 # segmented files (i.e. for training SegNet)
-SEGMENTS_INPUT_DIR = './input/segments/'
+SEGMENTS_INPUT_DIR = '../input/segments/'
+
+# -------------------- Output Directory Variables ---------------------------#
+# directory for models cache
+MODEL_CACHE = "./cache/"
+
+# directory for final output images
+OUTPUT_DIR = "../results/"
 
 # -------------------- Input Data File Extensions ---------------------------#
 # extensions for how the truths are provided in DB
