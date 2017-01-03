@@ -9,6 +9,7 @@ import model.settings as s
 
 import os
 import cv2
+import numpy as np
 
 from keras.optimizers import SGD
 from keras.models import Sequential, load_model
@@ -17,18 +18,22 @@ from keras.layers.convolutional import Convolution2D, MaxPooling2D
 
 def default_N4():
     params = {
+        # size of filter outputs
         'fs1': 96,
         'fs2': 128,
         'fs3': 256,
 
+        # convolution kernel sizes
         'k1': 7,
         'k2': 5,
         'k3': 3,
 
+        # fully connected layer sizes
         'fc1': 768,
         'fc2': 768,
         'fc3': 16,
 
+        # learning rate
         'lr': 0.1
     }
     return N4(params)
@@ -37,20 +42,43 @@ class N4:
     def train(self):
         # -------------------- Training Procedure ----------------------------#
         print("Loading training files...")
-        X_train_files = os.listdir("{}{}".format(s.RAW_INPUT_DIR, s.TRAIN))
-        y_train_files = os.listdir("{}{}".format(s.EDGE_INPUT_DIR, s.TRAIN))
+        X_train_dir   = "{}{}".format(s.RAW_INPUT_DIR, s.TRAIN)
+        y_train_dir   = "{}{}".format(s.EDGE_INPUT_DIR, s.TRAIN)
 
-        X_train = [cv2.imread(train_file) for train_file in X_train_files]
-        y_reg_train = [cv2.imread(train_file) for train_file in y_train_files 
-            if train_file.split(".")[-1] == "jpg"]
+        X_train_files = os.listdir(X_train_dir)
+        y_train_files = os.listdir(y_train_dir)
 
-        # since each training image corresponds to four "truth images", we copy
-        y_train = [img for img in y_reg_train 
-            for _ in range(s.RAW_SEGMENTATION_SIZE)]
+        # have to sort to ensure the input image and corresonding truth line up
+        X_train_files.sort()
+        y_train_files.sort()
+
+        X_train_reg = [cv2.imread("{}{}".format(X_train_dir, train_file)) for 
+            train_file in X_train_files if train_file.split(".")[-1] == "jpg"]
+        y_train_reg = [cv2.imread("{}{}".format(y_train_dir, train_file)) 
+            for train_file in y_train_files]
+        
+        # need to convert to numpy array to have proper shapes
+        total_pictures  = len(X_train_reg) * s.RAW_SEGMENTATION_SIZE
+        reference_shape = X_train_reg[0].shape
+        final_shape = (total_pictures, reference_shape[0], 
+            reference_shape[1], reference_shape[2])
+
+        X_train = np.empty(final_shape)
+        y_train = np.empty(final_shape)
+
+        for picture in range(total_pictures):
+            y_train[picture] = y_train_reg[picture]
+
+            # since each training image corresponds to four "truth images", we copy
+            for copy in range(s.RAW_SEGMENTATION_SIZE):
+                X_train[picture * s.RAW_SEGMENTATION_SIZE + copy] = X_train_reg[picture]
+
+        print(X_train.shape)
+        print(y_train.shape)
 
         print("Performing training...")
         sgd = SGD(lr=self.learning_rate, decay=1e-6, momentum=0.9)
-        self.model.compile(loss='mean_absolute_error',
+        self.model.compile(loss='mean_squared_error',
                       optimizer=sgd,
                       metrics=['accuracy'])
         self.model.fit(X_train, y_train, nb_epoch=20, batch_size=16)

@@ -6,7 +6,6 @@ program, including doing the segmentation and watershed on input images.
 
 import click
 from model import default_N4, default_segnet, preprocess_imgs
-from watershed import watershed
 
 @click.group()
 def cli():
@@ -36,14 +35,6 @@ def predict(input_img):
     """
     N4 = default_N4()
     N4.predict(input_img)
-
-@cli.command()
-@click.argument('input_img')
-def watershed(input_img):
-    """
-    Runs watershed on input image
-    """
-    watershed(input_img)
 
 if __name__ == '__main__':
     cli()
