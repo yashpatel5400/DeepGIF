@@ -12,7 +12,6 @@ import tensorflow as tf
 import tifffile
 from scipy.misc import imsave
 
-
 def train(model, data_provider, data_folder, n_iterations=500):
     results_folder = data_folder + 'results/'
     ckpt_folder = results_folder + model.model_name + '/'
