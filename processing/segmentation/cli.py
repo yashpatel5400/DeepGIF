@@ -12,6 +12,7 @@ def cli():
     pass
 
 @cli.command()
+@click.argument('images')
 def preprocess():
     """
     Preprocess the BSD500 images for both the edges and full segmentation

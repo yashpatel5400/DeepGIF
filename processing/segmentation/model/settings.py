@@ -3,16 +3,6 @@ __author__ = Yash Patel, Richard Du, and Jason Shi
 __description__ = Global variable declarations (module-level) for segmentation
 """
 
-# -------------------- Segnet Global Variables ------------------------------#
-# size of convolution kernels
-KERNEL = 8
-
-# paddings for the convolutions
-PAD = 1
-
-# side length for the max pooling window
-POOL_SIZE = 2
-
 # -------------------- Input Img Global Variables ---------------------------#
 # training images split (in corresponding input directory)
 TRAIN = 'train/'
