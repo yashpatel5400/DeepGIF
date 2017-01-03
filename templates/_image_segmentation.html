@@ -1,0 +1,26 @@
+{% block body %}
+	<div class="row">
+	<div class="twelve columns" id="original_image">
+		<img src="{{url_for('uploaded_file', filename=original_image)}}">
+	</div>
+	</div>
+	<div style="clear:both;"></div>
+	<div class="row">
+	{% for file in segments %}
+		
+		<div class="segment">
+	    <img src="{{url_for('uploaded_file', filename=file)}}">
+	    <select name="{{file}}">
+	    	<option value="style0">style0</option>
+		    <option value="style1">style1</option>
+		    <option value="style2">style2</option>
+		    <option value="style3">style3</option>
+	    </select>
+	</div>
+	{% endfor %}
+  	</div>
+  	<div class="row">
+  		<button id="generate" type="button">Generate new image</button>
+  	</div>
+  
+{% endblock %}
