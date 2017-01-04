@@ -6,13 +6,13 @@ import numpy as np
 import itertools
 
 def trackGreedy(img1, img2, numClasses):
-    '''
+    """
     Track segmented masks from img1 to img2 using a greedy approach.
     :param img1: First image
     :param img2: Second image
     :param numClasses: Total number of classes in the image
     :return: Return the mapping from the class labels in img1 that correspond to class labels in img2
-    '''
+    """
     count = np.zeros((numClasses, numClasses));
 
     for x in range(img1.shape[0]):
@@ -42,13 +42,13 @@ def trackGreedy(img1, img2, numClasses):
     return map.astype(int)
 
 def trackExhaustive(img1, img2, numClasses):
-    '''
+    """
     Track segmented masks from img1 to img2 trying all possible mappings
     :param img1: First image
     :param img2: Second image
     :param numClasses: Total number of classes in the image
     :return: Return the mapping from the class labels in img1 that correspond to class labels in img2
-    '''
+    """
     mapping = range(numClasses)
     perms = itertools.permutations(mapping)
     maxHits = 0

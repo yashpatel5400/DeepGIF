@@ -4,6 +4,9 @@ flask
 
 # folders that contain input images
 # code will be added to pull the relevant images from a separate DB
+processing/input/
+processing/results/
 processing/segmentation/input/
+processing/segmentation/results/
 processing/styletransfer/input/
 processing/styletransfer/results/

@@ -29,7 +29,3 @@ MODEL_CACHE = "./cache/"
 
 # directory for final output images
 OUTPUT_DIR = "./results/"
-
-# -------------------- Input Data File Extensions ---------------------------#
-# extensions for how the truths are provided in DB
-INPUT_MAT = 'mat'

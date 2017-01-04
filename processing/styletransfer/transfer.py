@@ -89,16 +89,14 @@ def coherence_loss(generated_features):
 	return K.sum(K.pow(a + b, 1.25))
 
 # adopted from: https://github.com/fchollet/keras/blob/master/examples/conv_filter_visualization.py
-def transform(content_features, content_weight, style_features, style_weights, 
-	transform_features, output_img, output_name, is_video):
+def transform(content_features, style_features, transform_features, 
+	output_img, output_name, is_video):
 
 	loss = K.variable(0.0)
-	loss  +=  content_weight * content_loss(content_features, transform_features)
-	for style_feature, transform_feature, weight in zip(style_features, 
-		transform_features, style_weights):
-
-		loss  += weight * style_loss(style_feature, transform_feature)
-	loss  += coherence_loss(output_img)
+	loss  +=  s.STYLE_WEIGHT * content_loss(content_features, transform_features)
+	for style_feature, transform_feature in zip(style_features, transform_features):
+		loss  += s.CONTENT_WEIGHT * style_loss(style_feature, transform_feature)
+	loss  += s.COHERENCE_WEIGHT coherence_loss(output_img)
 
 	grads = K.gradients(loss, output_img)[0]
 
@@ -140,22 +138,17 @@ def img_tensor(filename):
 	img_arr = preprocess_input(img_arr)
 	return K.variable(img_arr)
 
-def stylize_image(trial_settings, is_video=False):
-	content_img	   = trial_settings['content_input']
-	content_weight = trial_settings['content_weight']
-	style_img	   = trial_settings['style_img']
-	style_weights  = trial_settings['style_weights']
-
-	combined_name = "{}-{}".format(content_img.split(".")[0], 
-		style_img.split(".")[0])
+def stylize_image(content, style, frame=None):
+	combined_name = "{}-{}".format(content.split(".")[0], 
+		style.split(".")[0])
 
 	model_input = []
+
 	# input image: content
-	if not is_video:
-		input_file = "{}/{}".format(s.INPUT_CONTENT_DIR, content_img)
+	if frame is None:
+		input_file = "{}/{}".format(s.INPUT_CONTENT_DIR, content)
 		final_name = combined_name
 	else: 
-		frame = trial_params['frame']
 		input_file = "{}/{}/{}".format(s.INPUT_FRAME_DIR, 
 			combined_name, frame)
 		final_name = "{}/{}".format(combined_name, frame)
@@ -165,7 +158,7 @@ def stylize_image(trial_settings, is_video=False):
 
 	# input image: style
 	style_img_tensor = img_tensor("{}/{}".format(
-		s.INPUT_STYLE_DIR, style_img))
+		s.INPUT_STYLE_DIR, style))
 	model_input.append(style_img_tensor)
 	
 	# tensor used for "molding to" the desired combination
@@ -190,15 +183,12 @@ def stylize_image(trial_settings, is_video=False):
 		style_features.append(features[1,:,:,:])
 		transform_features.append(features[2,:,:,:])
 
-	transform(content_features, content_weight, style_features, style_weights, 
+	transform(content_features, style_features, 
 		transform_features, transform_image_tensor, final_name, is_video)
 
-def stylize_video(trial_settings):
-	style_img  = trial_settings['style_img']
-	video_file = trial_settings['content_input']
-
-	combined_name = "{}-{}".format(video_file.split(".")[0], 
-		style_img.split(".")[0])
+def stylize_video(frame, content, style):
+	combined_name = "{}-{}".format(content.split(".")[0], 
+		style.split(".")[0])
 
 	input_dir = "{}/{}".format(s.INPUT_FRAME_DIR, combined_name)
 	output_dir = "{}/{}".format(s.OUTPUT_FRAME_DIR, combined_name)
@@ -209,7 +199,7 @@ def stylize_video(trial_settings):
 	if not os.path.exists(input_dir):
 		os.makedirs(input_dir)
 
-		vidcap = cv2.VideoCapture("{}/{}".format(s.INPUT_CONTENT_DIR, video_file))
+		vidcap = cv2.VideoCapture("{}/{}".format(s.INPUT_CONTENT_DIR, content))
 		success, image = vidcap.read()
 		count = 0
 		while success:
@@ -224,8 +214,7 @@ def stylize_video(trial_settings):
 	for file in range(count):
 		next_img = "{}.jpg".format(file)
 		if not os.path.exists("{}/{}.png".format(output_dir, next_img)):
-			trial_params['frame'] = next_img
-			stylize_image(trial_params, is_video=True)
+			stylize_image(trial_params, frame=next_img)
 		print("Completed {}".format(file))
 
 	video = None
@@ -241,18 +230,4 @@ def stylize_video(trial_settings):
 	video.release()
 
 if __name__ == "__main__":
-	trial_params = {
-		'is_video': True,
-		# only used for the video stylizations
-		'frame': None,
-
-		'content_input': 'starwars.gif',
-		'content_weight': 0.025,
-
-		'style_img': 'scream.jpg',
-		'style_weights': [.75, .75, .75, .75, .75]
-	}
-
-	if trial_params['is_video']:
-		stylize_video(trial_params)
-	else: stylize_image(trial_params, is_video=False)
+	stylize_image(content='italy.png', style='scream.jpg')

@@ -13,6 +13,11 @@ import caffe
 from scipy.misc import imsave
 
 def download_model():
+    """
+    Downloads the pre-trained HED model from Berkeley website. Should display 
+    progress as download taking place
+    :return: None
+    """
     file_name = s.MODEL_SITE.split('/')[-1]
     u = urllib2.urlopen(s.MODEL_SITE)
     f = open(file_name, 'wb')
@@ -37,13 +42,27 @@ def download_model():
     shutil.move("./{}".format(file_name), "{}{}".format(s.MODEL_CACHE, file_name))
 
 def normalize_img(img_file):
+    """
+    Normalizes a given RGB image. Note that normalizing the same image twice returns
+    the original img.
+    :param img_file: The filename (string) of image (WITH corresponding directory)
+    :return: None
+    """
     img  = cv2.imread(img_file)
     dest = np.zeros(img.shape)
     norm_img = cv2.normalize(img, dest, alpha=0, beta=1, 
         norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F)
     return norm_img
 
-def segment_edges(imgs):
+def segment_edges(imgs, save_output=True):
+    """
+    Given a list of images, returns the edge segmentations of the images. They will
+    be returned corresponding to the order inputted and can be saved to the default
+    directory if so desired (primarily for debugging)
+    :param imgs: The filenames (iterable of strings) of the images. Note that these
+        MUST be stored in the "input" directory under "segmentation"
+    :return: List of numpy arrays corresponding to the edge segmentations of input
+    """
     pretrained_meta = '{}{}'.format(s.MODEL_CACHE, s.MODEL_META)
     pretrained_model = '{}{}'.format(s.MODEL_CACHE, s.MODEL_FILENAME)
 
@@ -51,6 +70,7 @@ def segment_edges(imgs):
         print("Downloading the pre-trained model")
         download_model()
 
+    edges = []
     net = caffe.Net(pretrained_meta, pretrained_model, caffe.TEST)
     for (i, img) in enumerate(imgs):
         filename = img.split(".")[0]
@@ -74,7 +94,12 @@ def segment_edges(imgs):
         out4 = net.blobs['sigmoid-dsn4'].data[0][0,:,:]
         out5 = net.blobs['sigmoid-dsn5'].data[0][0,:,:]
         fuse = net.blobs['sigmoid-fuse'].data[0][0,:,:]
-        imsave("{}{}.jpg".format(s.OUTPUT_DIR, filename), out2)
+
+        if save_output:
+            imsave("{}{}.jpg".format(s.OUTPUT_DIR, filename), out2)
+        edges.append(out2)
+
+    return edges
 
 if __name__ == "__main__":
-    segment_edges(["0.jpg", "buildings.jpg", "italy.png"])
+    segment_edges(["triforce.png"])
