@@ -5,37 +5,26 @@ program, including doing the segmentation and watershed on input images.
 """
 
 import click
-from model import default_N4, default_segnet, preprocess_imgs
+from model import segment_edges, download_model
 
 @click.group()
 def cli():
     pass
 
 @cli.command()
-@click.argument('images')
-def preprocess():
+def download():
     """
-    Preprocess the BSD500 images for both the edges and full segmentation
+    Downloads the pretrained HED model
     """
-    preprocess_imgs()
+    download_model()
 
 @cli.command()
-# @click.argument('dataset', type=click.Choice(['edge', 'full']))
-def train():
+@click.argument('img')
+def segment(img):
     """
-    Train an N4 models to predict affinities
+    Reloads a model previously trained
     """
-    N4 = default_N4()
-    N4.train()
-
-@cli.command()
-@click.argument('input_img')
-def predict(input_img):
-    """
-    Realods a model previously trained
-    """
-    N4 = default_N4()
-    N4.predict(input_img)
+    segment_edges([img])
 
 if __name__ == '__main__':
     cli()

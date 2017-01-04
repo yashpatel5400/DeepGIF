@@ -1,4 +1,5 @@
 *.pyc
+*.caffemodel
 flask
 
 # folders that contain input images

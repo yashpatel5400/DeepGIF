@@ -7,10 +7,40 @@ is used for N4 edge detection
 import model.settings as s
 
 import os
+import shutil
 import cv2
 import numpy as np
 from scipy.misc import imsave
-import scipy.io
+import urllib2
+
+def download_model():
+	pretrained_model = '{}{}'.format(s.MODEL_CACHE, s.MODEL_FILENAME)
+	#if os.path.exists(pretrained_model):
+	#	print("Requirement already satisfied")
+	#	return
+
+	file_name = s.MODEL_SITE.split('/')[-1]
+	u = urllib2.urlopen(s.MODEL_SITE)
+	f = open(file_name, 'wb')
+	meta = u.info()
+	file_size = int(meta.getheaders("Content-Length")[0])
+	print("Downloading: {} Bytes: {}".format(file_name, file_size))
+
+	file_size_dl = 0
+	block_sz = 8192
+	while True:
+		buffer = u.read(block_sz)
+		if not buffer:
+			break
+
+		file_size_dl += len(buffer)
+		f.write(buffer)
+		status = r"%10d  [%3.2f%%]" % (file_size_dl, file_size_dl * 100. / file_size)
+		status = status + chr(8) * (len(status)+1)
+		print(status)
+	
+	f.close()
+	shutil.move("./{}".format(file_name), "{}{}".format(s.MODEL_CACHE, file_name))
 
 def preprocess_imgs():
 	file_split = [s.TRAIN, s.TEST]
@@ -35,7 +65,7 @@ def preprocess_imgs():
 			truth = scipy.io.loadmat(truth_file)
 			for segment in range(s.RAW_SEGMENTATION_SIZE):
 				segments = truth['groundTruth'][0, segment][0][0][0]
-				edges    = truth['groundTruth'][0, segment][0][0][1]
+				edges	= truth['groundTruth'][0, segment][0][0][1]
 
 				dest = np.zeros(edges.shape)
 				norm_edges = cv2.normalize(edges, dest, alpha=0, beta=1, 

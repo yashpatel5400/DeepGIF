@@ -11,21 +11,21 @@ TRAIN = 'train/'
 TEST = 'test/'
 
 # -------------------- Input Directory Global Variables ---------------------#
-# number of segmentations for each raw image
-RAW_SEGMENTATION_SIZE = 4
-
 # raw images and matrix files
-RAW_INPUT_DIR = './input/raw/'
-
-# edge files (i.e. for training N4 and UNet)
-EDGE_INPUT_DIR = './input/edges/'
-
-# segmented files (i.e. for training SegNet)
-SEGMENTS_INPUT_DIR = './input/segments/'
+INPUT_DIR = './input/'
 
 # -------------------- Output Directory Variables ---------------------------#
+# website where the pre-trained model can be downloaded
+MODEL_SITE = 'http://vcl.ucsd.edu/hed/hed_pretrained_bsds.caffemodel'
+
 # directory for models cache
 MODEL_CACHE = "./model/cache/"
+
+# metadata about the model needed to load pretrained Caffe models
+MODEL_META = "deploy.prototxt"
+
+# cached model filename
+MODEL_FILENAME = "hed_pretrained_bsds.caffemodel"
 
 # directory for final output images
 OUTPUT_DIR = "./results/"
