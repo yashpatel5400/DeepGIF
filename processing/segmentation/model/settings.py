@@ -1,0 +1,35 @@
+"""
+__author__ = Yash Patel, Richard Du, and Jason Shi
+__description__ = Global variable declarations (module-level) for segmentation
+"""
+
+# -------------------- Input Img Global Variables ---------------------------#
+# training images split (in corresponding input directory)
+TRAIN = 'train/'
+
+# test images split (in corresponding input directory)
+TEST = 'test/'
+
+# -------------------- Input Directory Global Variables ---------------------#
+# number of segmentations for each raw image
+RAW_SEGMENTATION_SIZE = 4
+
+# raw images and matrix files
+RAW_INPUT_DIR = './input/raw/'
+
+# edge files (i.e. for training N4 and UNet)
+EDGE_INPUT_DIR = './input/edges/'
+
+# segmented files (i.e. for training SegNet)
+SEGMENTS_INPUT_DIR = './input/segments/'
+
+# -------------------- Output Directory Variables ---------------------------#
+# directory for models cache
+MODEL_CACHE = "./model/cache/"
+
+# directory for final output images
+OUTPUT_DIR = "./results/"
+
+# -------------------- Input Data File Extensions ---------------------------#
+# extensions for how the truths are provided in DB
+INPUT_MAT = 'mat'
