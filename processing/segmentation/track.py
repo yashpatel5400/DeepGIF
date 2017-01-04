@@ -72,11 +72,30 @@ def trackExhaustive(img1, img2, numClasses):
 
     return bestMapping.astype(int)
 
+def submask(masked_img, classes):
+    """
+    Given an image mask (2D numpy array) and a list of classes, produces a 
+    submask of the image where only those pixels with entry being one of
+    the ones specified in the classes list are retained
+    
+    :param masked_img: the numpy array corresponding to a mask
+    :param classes: list of classes to be retained from masked_img
+    :return: numpy array of same dimensions as masked image, with only the
+        values from classes
+    """
+    submask = masked_img.copy()
+    shape = imgs.shape
+    for i in range(shape[0]):
+        for j in range(shape[1]):
+            super_mask_val = masked_img[i][j]
+            submask[i][j]  = super_mask_val * int(super_mask_val in classes)
+    return submask
 
 def mask_imgs(imgs):
     """
-    Given imgs, a numpy array of images that have already been segmenetd, return a numpy array of images where the
-    segmented labels correspond to the first image's labels.
+    Given imgs, a numpy array of images that have already been segmenetd, 
+    return a numpy array of images where the segmented labels 
+    correspond to the first image's labels.
     
     :param imgs: the numpy array of images that have already been segmented
     :return: the altered image segment labels
