@@ -4,7 +4,7 @@ __description__ = Final processing file used for fully stylizing an
 image with multiple masks and tracking.
 """
 
-from styletransfer import stylize_image, stylize_video
+from styletransfer import stylize_image, stylize_video, fast_stylize_image
 from segmentation import segment_edges, segment, mask_imgs, submask
 
 def process_imgs(contents, styles, mask_map):
