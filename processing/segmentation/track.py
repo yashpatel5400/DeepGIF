@@ -8,6 +8,7 @@ import itertools
 def trackGreedy(img1, img2, numClasses):
     """
     Track segmented masks from img1 to img2 using a greedy approach.
+    
     :param img1: First image
     :param img2: Second image
     :param numClasses: Total number of classes in the image
@@ -44,6 +45,7 @@ def trackGreedy(img1, img2, numClasses):
 def trackExhaustive(img1, img2, numClasses):
     """
     Track segmented masks from img1 to img2 trying all possible mappings
+    
     :param img1: First image
     :param img2: Second image
     :param numClasses: Total number of classes in the image
@@ -72,12 +74,13 @@ def trackExhaustive(img1, img2, numClasses):
 
 
 def mask_imgs(imgs):
-    '''
+    """
     Given imgs, a numpy array of images that have already been segmenetd, return a numpy array of images where the
     segmented labels correspond to the first image's labels.
+    
     :param imgs: the numpy array of images that have already been segmented
     :return: the altered image segment labels
-    '''
+    """
     numClasses = np.max(imgs) + 1
     for idx in range(1, imgs.shape[0]):
         mapping = trackExhaustive(imgs[idx-1], imgs[idx], numClasses)

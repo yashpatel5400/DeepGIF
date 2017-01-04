@@ -14,11 +14,12 @@ from skimage import measure
 import cv2
 
 def segment(edges):
-    '''
+    """
     Segments the greyscale edgemap image, img.
+    
     :param edges: The greyscale edgemap
     :return: The labeled segmented image
-    '''
+    """
 
     # Perform local Otsu segmentation on the image
     radius = 15
@@ -41,9 +42,9 @@ def segment(edges):
     # Perform connected components segmentation again
     blobs_labels = measure.label(separated, background=0)
 
-    '''
+    """
     Uncomment the following code to show the segmented image
-    '''
+    """
     matplotlib.rcParams['font.size'] = 9
     plt.figure(figsize=(9, 3.5))
     plt.subplot(131)

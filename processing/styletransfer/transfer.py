@@ -23,26 +23,33 @@ import PIL
 from PIL import Image
 from scipy.misc import imsave
 
-# sizes of the input: initialized based on the content image
+# sizes of the input: initialized based on the content image in 
+# "img_tensor" function
 WIDTH  = None
 HEIGHT = None
 
-# util function to convert a tensor into a valid image
-# from: https://github.com/fchollet/keras/blob/master/examples/conv_filter_visualization.py
-def deprocess_image(x):
-	x = x.reshape((WIDTH, HEIGHT, 3))
+# Credit to: https://github.com/fchollet/keras/blob/master/examples/conv_filter_visualization.py
+def deprocess_image(tensor):
+	"""
+	Convert a tensor into a valid image
+	
+	:param tensor: Tensor corresponding to an image
+	:return: Numpy array representation of RGB image
+	"""
+	
+	img = tensor.reshape((WIDTH, HEIGHT, 3))
 	# Remove zero-center by mean pixel
-	x[:, :, 0] += 103.939
-	x[:, :, 1] += 116.779
-	x[:, :, 2] += 123.68
+	img[:, :, 0] += 103.939
+	img[:, :, 1] += 116.779
+	img[:, :, 2] += 123.68
 
 	# 'BGR'->'RGB'
-	x = x[:, :, ::-1]
-	x = np.clip(x, 0, 255).astype('uint8')
-	return x
+	img = img[:, :, ::-1]
+	img = np.clip(img, 0, 255).astype('uint8')
+	return img
 
 # stores loss and gradients for efficiency
-# adopted from https://github.com/fchollet/keras/blob/master/examples/neural_style_transfer.py
+# Credit to: https://github.com/fchollet/keras/blob/master/examples/neural_style_transfer.py
 class GradLoss:
 	def __init__(self, iterate):
 		self.iterate = iterate
@@ -56,41 +63,82 @@ class GradLoss:
 	def grad(self, x):
 		return self.grad_values
 
-# the following three functions are defined by their descriptions
-# from the "Style Transfer" paper
-def gram_matrix(output):
+# -------------------------- Loss Functions ----------------------------------#
+def _gram_matrix(output):
+	"""
+	Calculates Gram Matrix (https://en.wikipedia.org/wiki/Gramian_matrix) for a
+	given tensor. 
+	
+	:param output: Tensor for which Gram Matrix will be calculated (usually image)
+	:return: Tensor corresponding to Gram Matrix result
+	"""
 	output = K.permute_dimensions(output, (2, 0, 1))
 	flat_output = K.batch_flatten(output)
 	return K.dot(flat_output, K.transpose(flat_output))
 
 def style_loss(original_feature, generated_feature):
+	"""
+	Calculates style loss, given the original style tensor and one being molded
+	
+	:param original_feature: Tensor corresponding to input style
+	:param generated_feature: Tensor corresponding to image being transformed.
+		Only a single layer of the image tensor should be passed (from VGG)
+	:return: Tensor corresponding to the loss as a result of style difference
+	"""
 	shape = original_feature.get_shape()
 	# correspondingly the M_l and N_l from the paper description
 	img_size = (shape[0] * shape[1]).value
 	num_filters = shape[2].value
 		
-	G_orig = gram_matrix(original_feature)
-	G_gen  = gram_matrix(generated_feature)
+	G_orig = _gram_matrix(original_feature)
+	G_gen  = _gram_matrix(generated_feature)
 	return (1. / (4. * img_size ** 2 * 
 		num_filters ** 2)) * K.sum(K.square(G_orig - G_gen))
 	
 def content_loss(original_features, generated_features):
+	"""
+	Calculates content loss, given the original content tensor and one being molded
+	
+	:param original_feature: Tensor corresponding to input content
+	:param generated_features: Tensor corresponding to image being transformed.
+		Note: All layers of the image tensor should be passed (from VGG)
+	:return: Tensor corresponding to the loss as a result of content difference
+	"""
 	original_content  = original_features[s.CONTENT_FEATURE_LAYER]
 	generated_content = generated_features[s.CONTENT_FEATURE_LAYER]
 	return K.sum(K.square(original_content - generated_content))
 
-# additional loss function that reduces pixelation
-# from https://github.com/fchollet/keras/blob/master/examples/neural_style_transfer.py
+# Credit to: https://github.com/fchollet/keras/blob/master/examples/neural_style_transfer.py
 def coherence_loss(generated_features):
+	"""
+	Calculates local coherence loss, given the tensor being molded
+	
+	:param generated_features: Tensor corresponding to image being transformed.
+		Note: All layers of the image tensor should be passed (from VGG)
+	:return: Tensor corresponding to the loss as a result of image being locally dissonant
+	"""
 	a = K.square(generated_features[:, :WIDTH-1, :HEIGHT-1, :] - 
 		generated_features[:, 1:, :HEIGHT-1, :])
 	b = K.square(generated_features[:, :WIDTH-1, :HEIGHT-1, :] - 
 		generated_features[:, :WIDTH-1, 1:, :])
 	return K.sum(K.pow(a + b, 1.25))
 
-# adopted from: https://github.com/fchollet/keras/blob/master/examples/conv_filter_visualization.py
+# Credit to: https://github.com/fchollet/keras/blob/master/examples/conv_filter_visualization.py
 def transform(content_features, style_features, transform_features, 
-	output_img, output_name, is_video):
+	output_img, output_name, save_intermediate=False):
+	"""
+	Produces an image (as numpy array) that melds both the contents and 
+	style features provided. 
+	
+	:param content_features: Features from running VGG-19 on input content tensor
+	:param style_features: Features from running VGG-19 on input style tensor
+	:param transform_features: Features from running VGG-19 on empty input image tensor
+	:param output_img: Tensor corresponding to interpolated image 
+	:param output_name: Name (string) of file that will be outputted in the end
+	:param save_intermediate: Whether or not files that are produced while running
+		style transfer (that are not the final result) will be saved to disk
+	:return: Numpy array for the image that interpolates the contents and styles inputted
+	"""
 
 	loss = K.variable(0.0)
 	loss  +=  s.STYLE_WEIGHT * content_loss(content_features, transform_features)
@@ -106,22 +154,30 @@ def transform(content_features, style_features, transform_features,
 	img_height  = shape[2].value
 	
 	grad_loss = GradLoss(K.function([output_img], [loss, grads]))
-	input_img_data = np.random.uniform(0, 255, (1, img_width, img_height, 3)) - 128.
+	final_img_data = np.random.uniform(0, 255, (1, img_width, img_height, 3)) - 128.
 
 	for i in range(s.NUM_ITERATIONS):
-		input_img_data, min_val, info = fmin_l_bfgs_b(grad_loss.loss, 
-			input_img_data.flatten(), fprime=grad_loss.grad, maxfun=20)
+		final_img_data, min_val, info = fmin_l_bfgs_b(grad_loss.loss, 
+			final_img_data.flatten(), fprime=grad_loss.grad, maxfun=20)
 
-		if not is_video:
+		if not save_intermediate:
 			imsave("{}/{}-{}.png".format(s.OUTPUT_FINAL_DIR, 
-				output_name, i), deprocess_image(input_img_data.copy()))
+				output_name, i), deprocess_image(final_img_data.copy()))
 		print('Current loss value:', min_val)
+
 	# only save the actual frame if processing a video
-	if is_video:
-		imsave("{}/{}.png".format(s.OUTPUT_FRAME_DIR, 
-			output_name), deprocess_image(input_img_data.copy()))
+	final_img = deprocess_image(final_img_data)
+	imsave("{}/{}.png".format(s.OUTPUT_FRAME_DIR, output_name), final_img)
+	return final_img
 
 def img_tensor(filename):
+	"""
+	Produces tensor corresponding to the image located at the filename specified
+	
+	:param filename: Filename of the image to be read in as a tensor. Also sets the
+		global WIDTH/HEIGHT variables
+	:return: Tensor corresponding to input image
+	"""
 	global WIDTH
 	global HEIGHT
 
@@ -139,6 +195,16 @@ def img_tensor(filename):
 	return K.variable(img_arr)
 
 def stylize_image(content, style, frame=None):
+	"""
+	Stylizes the image with the content and style specified. If it is a video, the
+	frame is also specified. Outputs are both returned and saved in "results" folder
+	specifically "results/final" for images and "results/frames/[name]" for videos
+	
+	:param content: Filename of content. MUST be saved in "input/content folder"
+	:param style: Filename of style. MUST be saved in "input/style folder"
+	:param frame: Name of current frame. Leave as "None" unless processing video
+	:return: Final stylized image as numpy array
+	"""
 	combined_name = "{}-{}".format(content.split(".")[0], 
 		style.split(".")[0])
 
@@ -173,7 +239,7 @@ def stylize_image(content, style, frame=None):
 		[layer.name for layer in model.layers] if "conv1" in name]
 
 	content_features   = []
-	style_features	 = []
+	style_features	   = []
 	transform_features = []
 
 	for i, layer in enumerate(layers):
@@ -183,10 +249,19 @@ def stylize_image(content, style, frame=None):
 		style_features.append(features[1,:,:,:])
 		transform_features.append(features[2,:,:,:])
 
-	transform(content_features, style_features, 
-		transform_features, transform_image_tensor, final_name, is_video)
+	final_img = transform(content_features, style_features, transform_features,
+		transform_image_tensor, final_name)
+	return final_img
 
-def stylize_video(frame, content, style):
+def stylize_video(content, style):
+	"""
+	Stylizes the video with the content and style specified. 
+	Outputs are only saved (NOT returned) in "results/frames/[name]" for videos
+	
+	:param content: Filename of content. MUST be saved in "input/content folder"
+	:param style: Filename of style. MUST be saved in "input/style folder"
+	:return: None
+	"""
 	combined_name = "{}-{}".format(content.split(".")[0], 
 		style.split(".")[0])
 

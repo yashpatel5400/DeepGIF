@@ -45,6 +45,7 @@ def normalize_img(img_file):
     """
     Normalizes a given RGB image. Note that normalizing the same image twice returns
     the original img.
+    
     :param img_file: The filename (string) of image (WITH corresponding directory)
     :return: None
     """
@@ -59,6 +60,7 @@ def segment_edges(imgs, save_output=True):
     Given a list of images, returns the edge segmentations of the images. They will
     be returned corresponding to the order inputted and can be saved to the default
     directory if so desired (primarily for debugging)
+    
     :param imgs: The filenames (iterable of strings) of the images. Note that these
         MUST be stored in the "input" directory under "segmentation"
     :return: List of numpy arrays corresponding to the edge segmentations of input
