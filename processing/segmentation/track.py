@@ -45,7 +45,7 @@ def trackGreedy(img1, img2, numClasses):
 def trackExhaustive(img1, img2, numClasses):
     """
     Track segmented masks from img1 to img2 trying all possible mappings
-    
+
     :param img1: First image
     :param img2: Second image
     :param numClasses: Total number of classes in the image

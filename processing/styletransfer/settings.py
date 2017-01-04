@@ -13,6 +13,7 @@ CONTENT_WEIGHT = 0.025
 # weighting of the coherence variable
 COHERENCE_WEIGHT = 1.0
 
+# -------------------- Simulation Setup Variables ---------------------------#
 # layer of the network used for the content loss (4th layer in original paper)
 CONTENT_FEATURE_LAYER = 3 
 

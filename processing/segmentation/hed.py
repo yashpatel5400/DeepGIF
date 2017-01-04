@@ -128,6 +128,30 @@ def segment_edges(imgs, save_output=True):
             if save_output:
                 imsave("{}{}.jpg".format(s.OUTPUT_DIR, filename), out2)
             edges.append(out2)
+        print("Processing image {}".format(i + 1))
+
+        im = Image.open("{}{}".format(s.INPUT_DIR, img))
+        in_ = np.array(im, dtype=np.float32)
+        in_ = in_[:,:,::-1]
+        in_ -= np.array((104.00698793,116.66876762,122.67891434))
+        
+        in_ = in_.transpose((2,0,1))
+        net.blobs['data'].reshape(1, *in_.shape)
+        net.blobs['data'].data[...] = in_
+
+        net.forward()
+
+        # all outputs provided if desired for experimenting
+        out1 = net.blobs['sigmoid-dsn1'].data[0][0,:,:]
+        out2 = net.blobs['sigmoid-dsn2'].data[0][0,:,:]
+        out3 = net.blobs['sigmoid-dsn3'].data[0][0,:,:]
+        out4 = net.blobs['sigmoid-dsn4'].data[0][0,:,:]
+        out5 = net.blobs['sigmoid-dsn5'].data[0][0,:,:]
+        fuse = net.blobs['sigmoid-fuse'].data[0][0,:,:]
+
+        if save_output:
+            imsave("{}{}.jpg".format(s.OUTPUT_DIR, filename), out2)
+        edges.append(out2)
 
     return edges
 

@@ -10,3 +10,5 @@
 *.mat
 
 flask
+__pycache__
+venv
