@@ -70,6 +70,23 @@ def trackExhaustive(img1, img2, numClasses):
 
     return bestMapping.astype(int)
 
+
+def mask_imgs(imgs):
+    '''
+    Given imgs, a numpy array of images that have already been segmenetd, return a numpy array of images where the
+    segmented labels correspond to the first image's labels.
+    :param imgs: the numpy array of images that have already been segmented
+    :return: the altered image segment labels
+    '''
+    numClasses = np.max(imgs) + 1
+    for idx in range(1, imgs.shape[0]):
+        mapping = trackExhaustive(imgs[idx-1], imgs[idx], numClasses)
+        reverseMapping = [0 for _ in range(numClasses)]
+        for i in range(len(mapping)):
+            reverseMapping[mapping[i]] = i
+        imgs[idx] = reverseMapping[imgs[idx]]
+    return imgs
+
 def test():
     img1 = np.array([
             [1, 1, 1, 0],
@@ -82,8 +99,9 @@ def test():
             [1, 1, 0, 0],
             [0, 0, 0, 0]])
     n = 2
-    print(trackExhaustive(img1, img2, n))
-    print(trackGreedy(img1, img2, n))
+    print trackExhaustive(img1, img2, n)
+    print trackGreedy(img1, img2, n)
+
 
 if __name__ == "__main__":
     test()
