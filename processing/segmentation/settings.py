@@ -14,7 +14,7 @@ TEST = 'test/'
 # raw images and matrix files
 INPUT_DIR = './input/'
 
-# -------------------- Output Directory Variables ---------------------------#
+# -------------------- Pre-trained Model Variables ---------------------------#
 # website where the pre-trained model can be downloaded
 MODEL_SITE = 'http://vcl.ucsd.edu/hed/hed_pretrained_bsds.caffemodel'
 
@@ -27,5 +27,6 @@ MODEL_FILENAME = "hed_pretrained_bsds.caffemodel"
 # directory for models cache
 MODEL_CACHE = "./cache/"
 
+# -------------------- Output Directory Variables ---------------------------#
 # directory for final output images
 OUTPUT_DIR = "./results/"

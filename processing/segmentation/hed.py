@@ -12,6 +12,29 @@ import Image
 import caffe
 from scipy.misc import imsave
 
+def preprocess_gif(gif):
+    filename = gif.split(".")[0]
+    
+    input_dir = "{}{}".format(s.INPUT_DIR, filename)
+    output_dir = "{}{}".format(s.OUTPUT_DIR, filename)
+    if not os.path.exists(input_dir):
+        os.makedirs(input_dir)
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
+    frames = []
+    vidcap = cv2.VideoCapture("{}/{}".format(s.INPUT_DIR, gif))
+    success, image = vidcap.read()
+    count = 0
+    while success:
+        print('Read a new frame: {}'.format(success))
+        cv2.imwrite("{}/{}.jpg".format(input_dir, count), image)
+        frames.append("{}/{}.jpg".format(filename, count))
+
+        success, image = vidcap.read()
+        count += 1
+    return segment_edges(frames)
+
 def download_model():
     """
     Downloads the pre-trained HED model from Berkeley website. Should display 
@@ -76,32 +99,37 @@ def segment_edges(imgs, save_output=True):
     net = caffe.Net(pretrained_meta, pretrained_model, caffe.TEST)
     for (i, img) in enumerate(imgs):
         filename = img.split(".")[0]
-        print("Processing image {}".format(i + 1))
+        file_extension = img.split(".")[-1]
+        if file_extension == "gif":
+            edges.append(preprocess_gif(img))
 
-        im = Image.open("{}{}".format(s.INPUT_DIR, img))
-        in_ = np.array(im, dtype=np.float32)
-        in_ = in_[:,:,::-1]
-        in_ -= np.array((104.00698793,116.66876762,122.67891434))
-        
-        in_ = in_.transpose((2,0,1))
-        net.blobs['data'].reshape(1, *in_.shape)
-        net.blobs['data'].data[...] = in_
+        else:
+            print("Processing image {}".format(i + 1))
 
-        net.forward()
+            im = Image.open("{}{}".format(s.INPUT_DIR, img))
+            in_ = np.array(im, dtype=np.float32)
+            in_ = in_[:,:,::-1]
+            in_ -= np.array((104.00698793,116.66876762,122.67891434))
+            
+            in_ = in_.transpose((2,0,1))
+            net.blobs['data'].reshape(1, *in_.shape)
+            net.blobs['data'].data[...] = in_
 
-        # all outputs provided if desired for experimenting
-        out1 = net.blobs['sigmoid-dsn1'].data[0][0,:,:]
-        out2 = net.blobs['sigmoid-dsn2'].data[0][0,:,:]
-        out3 = net.blobs['sigmoid-dsn3'].data[0][0,:,:]
-        out4 = net.blobs['sigmoid-dsn4'].data[0][0,:,:]
-        out5 = net.blobs['sigmoid-dsn5'].data[0][0,:,:]
-        fuse = net.blobs['sigmoid-fuse'].data[0][0,:,:]
+            net.forward()
 
-        if save_output:
-            imsave("{}{}.jpg".format(s.OUTPUT_DIR, filename), out2)
-        edges.append(out2)
+            # all outputs provided if desired for experimenting
+            out1 = net.blobs['sigmoid-dsn1'].data[0][0,:,:]
+            out2 = net.blobs['sigmoid-dsn2'].data[0][0,:,:]
+            out3 = net.blobs['sigmoid-dsn3'].data[0][0,:,:]
+            out4 = net.blobs['sigmoid-dsn4'].data[0][0,:,:]
+            out5 = net.blobs['sigmoid-dsn5'].data[0][0,:,:]
+            fuse = net.blobs['sigmoid-fuse'].data[0][0,:,:]
+
+            if save_output:
+                imsave("{}{}.jpg".format(s.OUTPUT_DIR, filename), out2)
+            edges.append(out2)
 
     return edges
 
 if __name__ == "__main__":
-    segment_edges(["triforce.png"])
+    segment_edges(["banana.gif", "pooh.gif", "NYC.gif"])
