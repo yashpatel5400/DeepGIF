@@ -144,7 +144,7 @@ def transform(content_features, style_features, transform_features,
 	loss  +=  s.STYLE_WEIGHT * content_loss(content_features, transform_features)
 	for style_feature, transform_feature in zip(style_features, transform_features):
 		loss  += s.CONTENT_WEIGHT * style_loss(style_feature, transform_feature)
-	loss  += s.COHERENCE_WEIGHT coherence_loss(output_img)
+	loss  += s.COHERENCE_WEIGHT * coherence_loss(output_img)
 
 	grads = K.gradients(loss, output_img)[0]
 
