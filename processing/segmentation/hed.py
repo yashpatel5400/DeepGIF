@@ -65,6 +65,18 @@ def download_model():
     f.close()
     shutil.move("./{}".format(file_name), "{}{}".format(s.MODEL_CACHE, file_name))
 
+def add_padding(im):
+    (width, height) = im.size
+    padded_width  = int(width * 1.25)
+    padded_height = int(height * 1.25)
+
+    delta_width = (padded_width - width)/2
+    delta_height = (padded_height - height)/2
+
+    padded_im = Image.new("RGB", (padded_width, padded_height))
+    padded_im.paste(im, (delta_width, delta_height))
+    return padded_im
+
 def remove_irregularity(img_file):
     """
     Removes the grey artifact left from running the HED neural net on an image,
@@ -76,7 +88,7 @@ def remove_irregularity(img_file):
     print("Postprocessing image")
     img = Image.open(img_file)
     (width, height) = img.size
-    cropped = img.crop((.05 * width, .05 * height, width, height))
+    cropped = img.crop((.10 * width, .10 * height, width, height))
     cropped.save(img_file)
 
 def normalize_img(img_file):
@@ -122,7 +134,8 @@ def segment_edges(imgs, save_output=True):
             print("Processing image {}".format(i + 1))
 
             im = Image.open("{}{}".format(s.INPUT_DIR, img))
-            in_ = np.array(im, dtype=np.float32)
+            pad_im = add_padding(im)
+            in_ = np.array(pad_im, dtype=np.float32)
             in_ = in_[:,:,::-1]
             in_ -= np.array((104.00698793,116.66876762,122.67891434))
             
@@ -141,36 +154,11 @@ def segment_edges(imgs, save_output=True):
             fuse = net.blobs['sigmoid-fuse'].data[0][0,:,:]
 
             if save_output:
-                imsave("{}{}.jpg".format(s.OUTPUT_DIR, filename), out2)
+                output_img = "{}{}.jpg".format(s.OUTPUT_DIR, filename)
+                imsave(output_img, out2)
+                remove_irregularity(output_img)
             edges.append(out2)
-        print("Processing image {}".format(i + 1))
-
-        im = Image.open("{}{}".format(s.INPUT_DIR, img))
-        in_ = np.array(im, dtype=np.float32)
-        in_ = in_[:,:,::-1]
-        in_ -= np.array((104.00698793,116.66876762,122.67891434))
-        
-        in_ = in_.transpose((2,0,1))
-        net.blobs['data'].reshape(1, *in_.shape)
-        net.blobs['data'].data[...] = in_
-
-        net.forward()
-
-        # all outputs provided if desired for experimenting
-        out1 = net.blobs['sigmoid-dsn1'].data[0][0,:,:]
-        out2 = net.blobs['sigmoid-dsn2'].data[0][0,:,:]
-        out3 = net.blobs['sigmoid-dsn3'].data[0][0,:,:]
-        out4 = net.blobs['sigmoid-dsn4'].data[0][0,:,:]
-        out5 = net.blobs['sigmoid-dsn5'].data[0][0,:,:]
-        fuse = net.blobs['sigmoid-fuse'].data[0][0,:,:]
-
-        if save_output:
-            output_img = "{}{}.jpg".format(s.OUTPUT_DIR, filename)
-            imsave(output_img, out2)
-            remove_irregularity(output_img)
-        edges.append(out2)
-
     return edges
 
 if __name__ == "__main__":
-    segment_edges(["buildings.jpg"])
+    segment_edges(["pooh.gif"])
