@@ -15,13 +15,7 @@ import chainer
 from chainer import cuda, Variable, serializers
 from net import FastStyleNet
 
-# from 6o6o's fork. https://github.com/6o6o/chainer-fast-neuralstyle/blob/master/generate.py
-def original_colors(original, stylized):
-    h, s, v = original.convert('HSV').split()
-    hs, ss, vs = stylized.convert('HSV').split()
-    return Image.merge('HSV', (h, s, vs)).convert('RGB')
-
-def fast_stylize_image(content_img, model, use_gpu=False):
+def fast_stylize_image(content_img, model):
     filename   = content_img.split(".")[0]
     img_name   = "{}{}".format(s.INPUT_CONTENT_DIR, content_img)
     model_name = "{}{}".format(s.FAST_MODEL_CACHE, model)
@@ -34,10 +28,6 @@ def fast_stylize_image(content_img, model, use_gpu=False):
 
     model = FastStyleNet()
     serializers.load_npz(model_name, model)
-    if use_gpu:
-        cuda.get_device(1).use()
-        model.to_gpu()
-    xp = np if (not use_gpu) else cuda.cupy
 
     start = time.time()
     original = Image.open(img_name).convert('RGB')
@@ -45,7 +35,7 @@ def fast_stylize_image(content_img, model, use_gpu=False):
     image = np.asarray(original, dtype=np.float32).transpose(2, 0, 1)
     image = image.reshape((1,) + image.shape)
     image = np.pad(image, [[0, 0], [0, 0], [s.PADDING, s.PADDING], [s.PADDING, s.PADDING]], 'symmetric')
-    image = xp.asarray(image)
+    image = np.asarray(image)
     
     x = Variable(image)
     y = model(x)
