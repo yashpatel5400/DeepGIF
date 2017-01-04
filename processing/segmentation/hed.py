@@ -11,6 +11,7 @@ import numpy as np
 import Image
 import caffe
 from scipy.misc import imsave
+from PIL import Image
 
 def preprocess_gif(gif):
     filename = gif.split(".")[0]
@@ -63,6 +64,20 @@ def download_model():
     
     f.close()
     shutil.move("./{}".format(file_name), "{}{}".format(s.MODEL_CACHE, file_name))
+
+def remove_irregularity(img_file):
+    """
+    Removes the grey artifact left from running the HED neural net on an image,
+    overwriting the specified image with cropped version
+    
+    :param img_file: The filename (string) of image (WITH corresponding directory)
+    :return: None
+    """
+    print("Postprocessing image")
+    img = Image.open(img_file)
+    (width, height) = img.size
+    cropped = img.crop((.05 * width, .05 * height, width, height))
+    cropped.save(img_file)
 
 def normalize_img(img_file):
     """
@@ -150,10 +165,12 @@ def segment_edges(imgs, save_output=True):
         fuse = net.blobs['sigmoid-fuse'].data[0][0,:,:]
 
         if save_output:
-            imsave("{}{}.jpg".format(s.OUTPUT_DIR, filename), out2)
+            output_img = "{}{}.jpg".format(s.OUTPUT_DIR, filename)
+            imsave(output_img, out2)
+            remove_irregularity(output_img)
         edges.append(out2)
 
     return edges
 
 if __name__ == "__main__":
-    segment_edges(["banana.gif", "pooh.gif", "NYC.gif"])
+    segment_edges(["buildings.jpg"])
