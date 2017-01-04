@@ -3,11 +3,12 @@
 ### Introduction:
 
 <img src="http://pages.ucsd.edu/~ztu/hed.jpg" width="400">
+
 We use a new edge detection algorithm, holistically-nested edge detection (HED), fully described by: http://arxiv.org/abs/1504.06375. We owe these excellent results fully to: Saining Xie at UC San Diego
 
 ### Pretrained model
 
-We provide the pretrained model and training/testing code for the edge detection framework Holistically-Nested Edge Detection (HED). Please see the Arxiv or ICCV paper for technical details. The pretrained model (fusion-output) gives ODS=.790 and OIS=.808 result on BSDS benchmark dataset.
+We provide the pretrained model and training/testing code for the edge detection framework Holistically-Nested Edge Detection (HED).
   0. Download the pretrained model (56MB) from (http://vcl.ucsd.edu/hed/hed_pretrained_bsds.caffemodel) and place it in examples/hed/ folder (will be downloaded automatically when the code is run if not already).
 
 ### Installing 
@@ -17,10 +18,10 @@ We provide the pretrained model and training/testing code for the edge detection
 ### Acknowledgment: 
 This code is taken from a pretrained HED. Special thanks to:
 
-  @InProceedings{xie15hed,
-      author = {"Xie, Saining and Tu, Zhuowen"},
+  @misc{xie15hed,
+      Author = {Xie, Saining and Tu, Zhuowen},
       Title = {Holistically-Nested Edge Detection},
-      Booktitle = "Proceedings of IEEE International Conference on Computer Vision",
+      Booktitle = {Proceedings of IEEE International Conference on Computer Vision},
       Year  = {2015},
     }
 
