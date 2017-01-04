@@ -12,6 +12,30 @@ import Image
 import caffe
 from scipy.misc import imsave
 
+def download_model():
+    file_name = s.MODEL_SITE.split('/')[-1]
+    u = urllib2.urlopen(s.MODEL_SITE)
+    f = open(file_name, 'wb')
+    meta = u.info()
+    file_size = int(meta.getheaders("Content-Length")[0])
+    print("Downloading: {} Bytes: {}".format(file_name, file_size))
+
+    file_size_dl = 0
+    block_sz = 8192
+    while True:
+        buffer = u.read(block_sz)
+        if not buffer:
+            break
+
+        file_size_dl += len(buffer)
+        f.write(buffer)
+        status = r"%10d  [%3.2f%%]" % (file_size_dl, file_size_dl * 100. / file_size)
+        status = status + chr(8) * (len(status)+1)
+        print(status)
+    
+    f.close()
+    shutil.move("./{}".format(file_name), "{}{}".format(s.MODEL_CACHE, file_name))
+
 def normalize_img(img_file):
     img  = cv2.imread(img_file)
     dest = np.zeros(img.shape)
@@ -24,9 +48,8 @@ def segment_edges(imgs):
     pretrained_model = '{}{}'.format(s.MODEL_CACHE, s.MODEL_FILENAME)
 
     if not os.path.exists(pretrained_model):
-        print("Please download the pre-trained model and metadata by\
-            running the 'cli.py download' command")
-        return
+        print("Downloading the pre-trained model")
+        download_model()
 
     net = caffe.Net(pretrained_meta, pretrained_model, caffe.TEST)
     for (i, img) in enumerate(imgs):
@@ -51,7 +74,7 @@ def segment_edges(imgs):
         out4 = net.blobs['sigmoid-dsn4'].data[0][0,:,:]
         out5 = net.blobs['sigmoid-dsn5'].data[0][0,:,:]
         fuse = net.blobs['sigmoid-fuse'].data[0][0,:,:]
-        imsave("{}{}-edges.jpg".format(s.OUTPUT_DIR, filename), out2)
+        imsave("{}{}.jpg".format(s.OUTPUT_DIR, filename), out2)
 
 if __name__ == "__main__":
-    segment_edges(["{}.jpg".format(i) for i in range(1, 15)])
+    segment_edges(["0.jpg", "buildings.jpg", "italy.png"])

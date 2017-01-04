@@ -1,8 +1,10 @@
 """
 __author__ = Yash Patel, Richard Du, and Jason Shi
-__description__ = Client for using the segmentation portion of the
-program, including doing the segmentation and watershed on input images.
+__description__ = Final processing file used for fully stylizing an
+image with multiple masks and tracking.
 """
 
-import click
-from model import segment_edges, download_model
+from styletransfer import stylize_image, stylize_video
+from styletransfer import segment_edges, download_model, segment
+
+process

@@ -1,21 +1,18 @@
 ## Holistically-Nested Edge Detection
 
-Created by Saining Xie at UC San Diego
-
 ### Introduction:
 
 <img src="http://pages.ucsd.edu/~ztu/hed.jpg" width="400">
-
-We develop a new edge detection algorithm, holistically-nested edge detection (HED), which performs image-to-image prediction by means of a deep learning model that leverages fully convolutional neural networks and deeply-supervised nets.  HED automatically learns rich hierarchical representations (guided by deep supervision on side responses) that are important in order to resolve the challenging ambiguity in edge and object boundary detection. We significantly advance the state-of-the-art on the BSD500 dataset (ODS F-score of .790) and the NYU Depth dataset (ODS F-score of .746), and do so with an improved speed (0.4s per image). Detailed description of the system can be found in our [paper](http://arxiv.org/abs/1504.06375).
+We use a new edge detection algorithm, holistically-nested edge detection (HED), fully described by: http://arxiv.org/abs/1504.06375. We owe these excellent results fully to: Saining Xie at UC San Diego
 
 ### Pretrained model
 
 We provide the pretrained model and training/testing code for the edge detection framework Holistically-Nested Edge Detection (HED). Please see the Arxiv or ICCV paper for technical details. The pretrained model (fusion-output) gives ODS=.790 and OIS=.808 result on BSDS benchmark dataset.
-  0. Download the pretrained model (56MB) from (http://vcl.ucsd.edu/hed/hed_pretrained_bsds.caffemodel) and place it in examples/hed/ folder.
+  0. Download the pretrained model (56MB) from (http://vcl.ucsd.edu/hed/hed_pretrained_bsds.caffemodel) and place it in examples/hed/ folder (will be downloaded automatically when the code is run if not already).
 
 ### Installing 
- 0. Install prerequisites for Caffe(http://caffe.berkeleyvision.org/installation.html#prequequisites)
- 0. Caffe: install from https://github.com/BVLC/caffe
+ 0. Install prerequisites for Caffe (http://caffe.berkeleyvision.org/installation.html#prequequisites)
+ 1. Caffe: install from https://github.com/BVLC/caffe
 
 ### Acknowledgment: 
 This code is taken from a pretrained HED. Special thanks to:
