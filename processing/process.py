@@ -16,6 +16,7 @@ def process_imgs(contents, styles, mask_map):
 
 	# obtain user input for specifying the desired segments and corresponding
 	# stylizations (dictionary): uses WEB interface
+	# gonna be something that depends on "reference" variable
 	class_to_style = {
 		0: 'bamboo.jpg',
 		1: 'bokeh.jpg'
@@ -24,11 +25,11 @@ def process_imgs(contents, styles, mask_map):
 	# construct corresponding mask for the first image (from the desired segment):
 	# remains CONSTANT between the different input images
 	classes = class_to_style.keys()
-	submasks = [submask(class_) for class_ in classes]
-	class_to_mask = dict(zip(classes, submasks))
-
+	submasked_input = submask(reference, classes)
+	
 	# construct full sequence of masks
-	masks = mask_imgs(reference)
+	segmented = [submasked_input] + [segment(edge) for edge in edges[1:]]
+	masks = mask_imgs(segmented)
 
 	# iterate through each of the images, each with their corresponding masks
 	stylized_imgs = []
