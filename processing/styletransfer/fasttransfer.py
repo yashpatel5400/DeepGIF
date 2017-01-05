@@ -17,6 +17,8 @@ from net import FastStyleNet
 
 def fast_stylize_image(content_img, model):
     filename   = content_img.split(".")[0]
+    modelname  = model.split(".")[0]
+
     img_name   = "{}{}".format(s.INPUT_CONTENT_DIR, content_img)
     model_name = "{}{}".format(s.FAST_MODEL_CACHE, model)
 
@@ -47,8 +49,12 @@ def fast_stylize_image(content_img, model):
     med = Image.fromarray(result)
     med = med.filter(ImageFilter.MedianFilter(s.MEDIAN_FILTER))
     print(time.time() - start, 'sec')
-    med.save("{}{}.jpg".format(s.OUTPUT_FINAL_DIR, filename))
+    med.save("{}{}-{}.jpg".format(s.OUTPUT_FINAL_DIR, modelname, filename))
     return med
 
 if __name__ == "__main__":
-    fast_stylize_image("buildings.jpg", "candy.model")
+    contents = ["bagend.jpg", "city.jpg"]
+    models = ["candy.model", "cubist.model", "starry.model", "seurat.model", "kanagawa.model"]
+    for content in contents:
+        for model in models:
+            fast_stylize_image(content, model)

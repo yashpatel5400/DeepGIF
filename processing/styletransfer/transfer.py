@@ -160,7 +160,7 @@ def transform(content_features, style_features, transform_features,
 		final_img_data, min_val, info = fmin_l_bfgs_b(grad_loss.loss, 
 			final_img_data.flatten(), fprime=grad_loss.grad, maxfun=20)
 
-		if not save_intermediate:
+		if save_intermediate:
 			imsave("{}/{}-{}.png".format(s.OUTPUT_FINAL_DIR, 
 				output_name, i), deprocess_image(final_img_data.copy()))
 		print('Current loss value:', min_val)
@@ -305,4 +305,8 @@ def stylize_video(content, style):
 	video.release()
 
 if __name__ == "__main__":
-	stylize_image(content='italy.png', style='scream.jpg')
+	contents = ["bagend.jpg", "japan.jpg", "nature.jpg"]
+    styles = ["bamboo.jpg", "blocks.jpg", "bokeh.jpg", "scream.jpg", "weird.jpg"]
+    for content in contents:
+        for style in styles:
+            stylize_image(content=content, style=style)
