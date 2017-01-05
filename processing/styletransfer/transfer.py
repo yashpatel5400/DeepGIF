@@ -306,7 +306,7 @@ def stylize_video(content, style):
 
 if __name__ == "__main__":
 	contents = ["bagend.jpg", "japan.jpg", "nature.jpg"]
-    styles = ["bamboo.jpg", "blocks.jpg", "bokeh.jpg", "scream.jpg", "weird.jpg"]
-    for content in contents:
-        for style in styles:
-            stylize_image(content=content, style=style)
+	styles = ["bamboo.jpg", "blocks.jpg", "bokeh.jpg", "scream.jpg", "weird.jpg"]
+	for content in contents:
+		for style in styles:
+			stylize_image(content=content, style=style)
