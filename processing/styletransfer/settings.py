@@ -18,7 +18,7 @@ COHERENCE_WEIGHT = 1.0
 CONTENT_FEATURE_LAYER = 3 
 
 # gradiet ascent number of iterations (producing image)
-NUM_ITERATIONS = 10
+NUM_ITERATIONS = 8
 
 # gradient ascent step size
 STEP_SIZE = 1.0

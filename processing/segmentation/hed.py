@@ -154,8 +154,8 @@ def segment_edges(imgs, save_output=True):
             fuse = net.blobs['sigmoid-fuse'].data[0][0,:,:]
 
             if save_output:
-                output_img = "{}{}.jpg".format(s.OUTPUT_DIR, filename)
-                imsave(output_img, out2)
+                output_img = "{}{}-fuse.jpg".format(s.OUTPUT_DIR, filename)
+                imsave(output_img, fuse)
                 remove_irregularity(output_img)
             edges.append(out2)
     return edges

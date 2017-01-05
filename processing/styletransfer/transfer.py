@@ -121,7 +121,7 @@ def coherence_loss(generated_features):
 		generated_features[:, 1:, :HEIGHT-1, :])
 	b = K.square(generated_features[:, :WIDTH-1, :HEIGHT-1, :] - 
 		generated_features[:, :WIDTH-1, 1:, :])
-	return K.sum(K.pow(a + b, 1.25))
+	return K.sum(a + b)
 
 # Credit to: https://github.com/fchollet/keras/blob/master/examples/conv_filter_visualization.py
 def transform(content_features, style_features, transform_features, 
@@ -141,9 +141,9 @@ def transform(content_features, style_features, transform_features,
 	"""
 
 	loss = K.variable(0.0)
-	loss  +=  s.STYLE_WEIGHT * content_loss(content_features, transform_features)
+	loss  +=  s.CONTENT_WEIGHT * content_loss(content_features, transform_features)
 	for style_feature, transform_feature in zip(style_features, transform_features):
-		loss  += s.CONTENT_WEIGHT * style_loss(style_feature, transform_feature)
+		loss  += s.STYLE_WEIGHT * style_loss(style_feature, transform_feature)
 	loss  += s.COHERENCE_WEIGHT * coherence_loss(output_img)
 
 	grads = K.gradients(loss, output_img)[0]
