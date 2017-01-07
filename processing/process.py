@@ -4,7 +4,7 @@ __description__ = Final processing file used for fully stylizing an
 image with multiple masks and tracking.
 """
 
-from styletransfer import stylize_image, stylize_video, fast_stylize_image
+from styletransfer import fast_stylize_image
 from segmentation import segment_edges, segment, mask_imgs, submask
 
 def process_imgs(contents, styles, mask_map):
@@ -17,10 +17,8 @@ def process_imgs(contents, styles, mask_map):
 	# obtain user input for specifying the desired segments and corresponding
 	# stylizations (dictionary): uses WEB interface
 	# gonna be something that depends on "reference" variable
-	class_to_style = {
-		0: 'bamboo.jpg',
-		1: 'bokeh.jpg'
-	}
+    # Also construct the stylez that are will be used...
+	class_to_style = ['bamboo.jpg','bokeh.jpg']
 
 	# construct corresponding mask for the first image (from the desired segment):
 	# remains CONSTANT between the different input images
@@ -37,12 +35,12 @@ def process_imgs(contents, styles, mask_map):
 
 		# iterate through each of the styles and apply them to the current image
 		cur_img_masks = []
-		for style in styles:
-			stylized_img = stylize_image(content=img, style=style)
-			style_mask   = mask[style]
-			masked_img   = np.multiply(style_mask, style_mask)
+		for idx in range(len(class_to_style)):
+			stylized_img = stylize_image(content=img, style=class_to_style[idx])
+			masked_img = np.multiply(stylized_img, mask == idx)
 			cur_img_masks.append(masked_img)
-
+        
 		# squash all the masked image into a single output
-
+		stylized_imgs.append(sum(cur_img_masks))
+		
 	return stylized_imgs
