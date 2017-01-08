@@ -6,7 +6,7 @@ image with multiple masks and tracking.
 
 import settings as s
 
-from styletransfer import fast_stylize_image
+from styletransfer import fast_stylize_image, stylize_image
 from segmentation import segment_edges, segment, mask_imgs, submask
 
 def process_imgs(contents, styles, mask_map):
@@ -19,7 +19,7 @@ def process_imgs(contents, styles, mask_map):
 	# obtain user input for specifying the desired segments and corresponding
 	# stylizations (dictionary): uses WEB interface
 	# gonna be something that depends on "reference" variable
-    # Also construct the stylez that are will be used...
+	# Also construct the stylez that are will be used...
 	class_to_style = ['bamboo.jpg','bokeh.jpg']
 
 	# construct corresponding mask for the first image (from the desired segment):
@@ -41,17 +41,26 @@ def process_imgs(contents, styles, mask_map):
 			stylized_img = stylize_image(content=img, style=class_to_style[idx])
 			masked_img = np.multiply(stylized_img, mask == idx)
 			cur_img_masks.append(masked_img)
-        
+		
 		# squash all the masked image into a single output
 		stylized_imgs.append(sum(cur_img_masks))
 		
 	return stylized_imgs
 
 if __name__ == "__main__":
-    contents = ["banana.gif"]
-    models = ["candy.model", "cubist.model"]
-    #segment_edges(contents, cache_dir=s.SEGMENT_MODEL_CACHE, 
-    #	input_dir=s.INPUT_CONTENT_DIR, output_dir=s.OUTPUT_FRAME_DIR, save_output=True)
-    fast_stylize_image(content_img=contents[0], model=models[0],
-    	cache_dir=s.TRANSFER_MODEL_CACHE, input_dir=s.INPUT_CONTENT_DIR, 
-    	output_dir=s.OUTPUT_FRAME_DIR)
+	contents = ["banana.gif"]
+	models = ["candy.model", "cubist.model"]
+	styles = ["bokeh.jpg", "monalist.jpg"]
+
+	# test segmentation calls
+	#segment_edges(contents, cache_dir=s.SEGMENT_MODEL_CACHE, 
+	#	input_dir=s.INPUT_CONTENT_DIR, output_dir=s.OUTPUT_FRAME_DIR, save_output=True)
+	
+	# test fast stylization calls
+	#fast_stylize_image(content_img=contents[0], model=models[0],
+	#	cache_dir=s.TRANSFER_MODEL_CACHE, input_dir=s.INPUT_CONTENT_DIR, 
+	#	output_dir=s.OUTPUT_FRAME_DIR)
+
+	# test regular stylization call
+	stylize_image(contents[0], styles[0], content_dir=s.INPUT_CONTENT_DIR, 
+		style_dir=s.INPUT_STYLE_DIR, output_dir=s.OUTPUT_FINAL_DIR)

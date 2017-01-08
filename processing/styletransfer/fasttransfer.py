@@ -43,12 +43,11 @@ def fast_stylize_image(content_img, model, cache_dir=s.FAST_MODEL_CACHE,
             print("Completed frame {}".format(frame))
 
         num_frames = len(os.listdir(gif_output_dir))
-        frames = [imageio.imread("{}{}-{}.png".format(gif_output_dir, modelname, frame))
+        frames = [Image.open("{}{}-{}.png".format(gif_output_dir, modelname, frame))
             for frame in range(num_frames)]
 
         gif_name = "{}{}.gif".format(output_dir, filename)
-        print(gif_name)
-        imageio.mimsave(gif_name, frames)
+        frames[0].save(gif_name, save_all=True, append_images=frames[1:], duration=100)
         return styled_frames
 
     if not os.path.exists(model_name):
@@ -77,7 +76,7 @@ def fast_stylize_image(content_img, model, cache_dir=s.FAST_MODEL_CACHE,
     med = med.filter(ImageFilter.MedianFilter(s.MEDIAN_FILTER))
     med.convert('P', colors=256).save(final_name)
     return med
-
+    
 if __name__ == "__main__":
     contents = ["bagend.jpg", "city.jpg"]
     models = ["candy.model", "cubist.model", "starry.model", "seurat.model", "kanagawa.model"]

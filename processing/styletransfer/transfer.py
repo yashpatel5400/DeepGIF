@@ -191,38 +191,41 @@ def stylize_image(content, style, content_dir=s.INPUT_CONTENT_DIR,
 	file_extension = content.split(".")[-1]
 	stylename  = style.split(".")[0]
 
+	content_file = "{}{}".format(content_dir, content)
+	style_file = "{}{}".format(style_dir, style)
+	final_name = "{}{}-{}".format(output_dir, filename, stylename)
+
 	if file_extension == "gif":
-		preprocess_gif(img)
-		gif_content_dir  = "{}{}/".format(input_dir, filename)
+		preprocess_gif(content)
+		gif_content_dir  = "{}{}/".format(content_dir, filename)
 		gif_output_dir = "{}{}/".format(output_dir, filename)
 		gif_imgs = os.listdir(gif_content_dir)
 			
 		styled_frames = []
 		for frame in gif_imgs:
 			styled_frame = stylize_image(frame, style, content_dir=gif_content_dir, 
-				style_dir=style_dir, output_dir=gif_output_dir, frame=None)
+				style_dir=style_dir, output_dir=gif_output_dir)
 			styled_frames.append(styled_frame)
 			print("Completed frame {}".format(frame))
 
+
 		num_frames = len(os.listdir(gif_output_dir))
-		frames = [imageio.imread("{}{}.png".format(gif_output_dir, frame)) 
-			for frame in range(num_frames)]
-		imageio.mimsave("{}{}.gif".format(output_dir, filename), frames)
+		frames = [Image.open("{}{}-{}.png".format(gif_output_dir, modelname, frame))
+            for frame in range(num_frames)]
+
+		gif_name = "{}{}.gif".format(output_dir, filename)
+		frames[0].save(gif_name, save_all=True, append_images=frames[1:], duration=100)
 		return styled_frames
-
-	combined_name = "{}-{}".format(filename, stylename)
-	input_file = "{}{}".format(content_dir, content)
-	final_name = "{}{}".format(output_dir, combined_name)
-
+		
 	# holds the three-layered tensor of inputs passed in
 	model_input = []
 
 	# input image: content
-	content_img_tensor = img_tensor(input_file)
+	content_img_tensor = img_tensor(content_file)
 	model_input.append(content_img_tensor)
 
 	# input image: style
-	style_img_tensor = img_tensor("{}{}".format(style_dir, style))
+	style_img_tensor = img_tensor(style_file)
 	model_input.append(style_img_tensor)
 	
 	# tensor used for "molding to" the desired combination
