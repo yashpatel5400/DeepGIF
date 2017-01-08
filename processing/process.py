@@ -4,6 +4,8 @@ __description__ = Final processing file used for fully stylizing an
 image with multiple masks and tracking.
 """
 
+import settings as s
+
 from styletransfer import fast_stylize_image
 from segmentation import segment_edges, segment, mask_imgs, submask
 
@@ -44,3 +46,12 @@ def process_imgs(contents, styles, mask_map):
 		stylized_imgs.append(sum(cur_img_masks))
 		
 	return stylized_imgs
+
+if __name__ == "__main__":
+    contents = ["banana.gif"]
+    models = ["candy.model", "cubist.model"]
+    #segment_edges(contents, cache_dir=s.SEGMENT_MODEL_CACHE, 
+    #	input_dir=s.INPUT_CONTENT_DIR, output_dir=s.OUTPUT_FRAME_DIR, save_output=True)
+    fast_stylize_image(content_img=contents[0], model=models[0],
+    	cache_dir=s.TRANSFER_MODEL_CACHE, input_dir=s.INPUT_CONTENT_DIR, 
+    	output_dir=s.OUTPUT_FRAME_DIR)

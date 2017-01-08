@@ -6,6 +6,7 @@ test image to verify working
 """
 
 import settings as s
+from preprocess import deprocess_image, preprocess_gif
 
 import numpy as np
 import os
@@ -19,34 +20,14 @@ from keras.applications.vgg19 import preprocess_input
 from keras.models import Model
 
 import cv2
-import PIL
 from PIL import Image
 from scipy.misc import imsave
+import imageio
 
 # sizes of the input: initialized based on the content image in 
 # "img_tensor" function
 WIDTH  = None
 HEIGHT = None
-
-# Credit to: https://github.com/fchollet/keras/blob/master/examples/conv_filter_visualization.py
-def deprocess_image(tensor):
-	"""
-	Convert a tensor into a valid image
-	
-	:param tensor: Tensor corresponding to an image
-	:return: Numpy array representation of RGB image
-	"""
-	
-	img = tensor.reshape((WIDTH, HEIGHT, 3))
-	# Remove zero-center by mean pixel
-	img[:, :, 0] += 103.939
-	img[:, :, 1] += 116.779
-	img[:, :, 2] += 123.68
-
-	# 'BGR'->'RGB'
-	img = img[:, :, ::-1]
-	img = np.clip(img, 0, 255).astype('uint8')
-	return img
 
 # stores loss and gradients for efficiency
 # Credit to: https://github.com/fchollet/keras/blob/master/examples/neural_style_transfer.py
@@ -125,7 +106,7 @@ def coherence_loss(generated_features):
 
 # Credit to: https://github.com/fchollet/keras/blob/master/examples/conv_filter_visualization.py
 def transform(content_features, style_features, transform_features, 
-	output_img, output_name, save_intermediate=False):
+	output_img, output_name, output_dir=s.OUTPUT_FINAL_DIR, save_intermediate=False):
 	"""
 	Produces an image (as numpy array) that melds both the contents and 
 	style features provided. 
@@ -161,13 +142,13 @@ def transform(content_features, style_features, transform_features,
 			final_img_data.flatten(), fprime=grad_loss.grad, maxfun=20)
 
 		if save_intermediate:
-			imsave("{}/{}-{}.png".format(s.OUTPUT_FINAL_DIR, 
+			imsave("{}{}-{}.png".format(output_dir, 
 				output_name, i), deprocess_image(final_img_data.copy()))
 		print('Current loss value:', min_val)
 
 	# only save the actual frame if processing a video
 	final_img = deprocess_image(final_img_data)
-	imsave("{}/{}.png".format(s.OUTPUT_FRAME_DIR, output_name), final_img)
+	imsave("{}{}.png".format(output_dir, output_name), final_img)
 	return final_img
 
 def img_tensor(filename):
@@ -194,7 +175,8 @@ def img_tensor(filename):
 	img_arr = preprocess_input(img_arr)
 	return K.variable(img_arr)
 
-def stylize_image(content, style, frame=None):
+def stylize_image(content, style, content_dir=s.INPUT_CONTENT_DIR, 
+	style_dir=s.INPUT_STYLE_DIR, output_dir=s.OUTPUT_FINAL_DIR):
 	"""
 	Stylizes the image with the content and style specified. If it is a video, the
 	frame is also specified. Outputs are both returned and saved in "results" folder
@@ -202,29 +184,45 @@ def stylize_image(content, style, frame=None):
 	
 	:param content: Filename of content. MUST be saved in "input/content folder"
 	:param style: Filename of style. MUST be saved in "input/style folder"
-	:param frame: Name of current frame. Leave as "None" unless processing video
 	:return: Final stylized image as numpy array
 	"""
-	combined_name = "{}-{}".format(content.split(".")[0], 
-		style.split(".")[0])
 
+	filename   = content.split(".")[0]
+	file_extension = content.split(".")[-1]
+	stylename  = style.split(".")[0]
+
+	if file_extension == "gif":
+		preprocess_gif(img)
+		gif_content_dir  = "{}{}/".format(input_dir, filename)
+		gif_output_dir = "{}{}/".format(output_dir, filename)
+		gif_imgs = os.listdir(gif_content_dir)
+			
+		styled_frames = []
+		for frame in gif_imgs:
+			styled_frame = stylize_image(frame, style, content_dir=gif_content_dir, 
+				style_dir=style_dir, output_dir=gif_output_dir, frame=None)
+			styled_frames.append(styled_frame)
+			print("Completed frame {}".format(frame))
+
+		num_frames = len(os.listdir(gif_output_dir))
+		frames = [imageio.imread("{}{}.png".format(gif_output_dir, frame)) 
+			for frame in range(num_frames)]
+		imageio.mimsave("{}{}.gif".format(output_dir, filename), frames)
+		return styled_frames
+
+	combined_name = "{}-{}".format(filename, stylename)
+	input_file = "{}{}".format(content_dir, content)
+	final_name = "{}{}".format(output_dir, combined_name)
+
+	# holds the three-layered tensor of inputs passed in
 	model_input = []
 
 	# input image: content
-	if frame is None:
-		input_file = "{}/{}".format(s.INPUT_CONTENT_DIR, content)
-		final_name = combined_name
-	else: 
-		input_file = "{}/{}/{}".format(s.INPUT_FRAME_DIR, 
-			combined_name, frame)
-		final_name = "{}/{}".format(combined_name, frame)
-
 	content_img_tensor = img_tensor(input_file)
 	model_input.append(content_img_tensor)
 
 	# input image: style
-	style_img_tensor = img_tensor("{}/{}".format(
-		s.INPUT_STYLE_DIR, style))
+	style_img_tensor = img_tensor("{}{}".format(style_dir, style))
 	model_input.append(style_img_tensor)
 	
 	# tensor used for "molding to" the desired combination
@@ -252,57 +250,6 @@ def stylize_image(content, style, frame=None):
 	final_img = transform(content_features, style_features, transform_features,
 		transform_image_tensor, final_name)
 	return final_img
-
-def stylize_video(content, style):
-	"""
-	Stylizes the video with the content and style specified. 
-	Outputs are only saved (NOT returned) in "results/frames/[name]" for videos
-	
-	:param content: Filename of content. MUST be saved in "input/content folder"
-	:param style: Filename of style. MUST be saved in "input/style folder"
-	:return: None
-	"""
-	combined_name = "{}-{}".format(content.split(".")[0], 
-		style.split(".")[0])
-
-	input_dir = "{}/{}".format(s.INPUT_FRAME_DIR, combined_name)
-	output_dir = "{}/{}".format(s.OUTPUT_FRAME_DIR, combined_name)
-
-	if not os.path.exists(output_dir):
-		os.makedirs(output_dir)
-
-	if not os.path.exists(input_dir):
-		os.makedirs(input_dir)
-
-		vidcap = cv2.VideoCapture("{}/{}".format(s.INPUT_CONTENT_DIR, content))
-		success, image = vidcap.read()
-		count = 0
-		while success:
-			print('Read a new frame: {}'.format(success))
-			cv2.imwrite("{}/{}.jpg".format(input_dir, count), image)
-			success, image = vidcap.read()
-			count += 1
-	else:
-		count = len(os.listdir(input_dir)) + 1
-		print('Loaded cached frames...')
-
-	for file in range(count):
-		next_img = "{}.jpg".format(file)
-		if not os.path.exists("{}/{}.png".format(output_dir, next_img)):
-			stylize_image(trial_params, frame=next_img)
-		print("Completed {}".format(file))
-
-	video = None
-	for file in os.listdir(output_dir):
-		img = cv2.imread("{}/{}.png".format(output_dir, file))
-		if video is None:	
-			height, width, layers = img.shape
-			video = cv2.VideoWriter('{}.avi'.format(combined_name), 
-				-1, 1, (width, height))
-		video.write(img)
-	
-	cv2.destroyAllWindows()
-	video.release()
 
 if __name__ == "__main__":
 	contents = ["bagend.jpg", "japan.jpg", "nature.jpg"]

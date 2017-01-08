@@ -1,5 +1,5 @@
-# DeepArch
-Video style transfer using convolutional networks, with tracking and masks. Implemented for Computer Vision 2016 (Princeton University) by Richard Du, Yash Patel, and Jason Shi
+# DeepGIF
+Video style transfer using convolutional networks, with tracking and masks for GIFs!!! Implemented for Computer Vision 2016 (Princeton University) by Richard Du, Yash Patel, and Jason Shi
 
 ### Requirement ###
 
