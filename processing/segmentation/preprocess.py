@@ -92,5 +92,5 @@ def remove_padding(img_file):
     print("Postprocessing image")
     img = Image.open(img_file)
     (width, height) = img.size
-    cropped = img.crop((.10 * width, .10 * height, width, height))
+    cropped = img.crop((int(.10 * width), int(.10 * height), width, height))
     cropped.save(img_file)

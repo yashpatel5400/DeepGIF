@@ -39,8 +39,7 @@ def preprocess_gif(gif, input_dir=s.INPUT_CONTENT_DIR,
     Then runs and returns edge segmentation results on the image frame stack
     :return: Array of numpy arrays corresponding to edge segmentation
     """
-    filename = gif.split(".")[0]
-    
+    filename = gif.split(".")[0]	
     input_dir = "{}{}".format(input_dir, filename)
     output_dir = "{}{}".format(output_dir, filename)
     if not os.path.exists(input_dir):
@@ -52,6 +51,7 @@ def preprocess_gif(gif, input_dir=s.INPUT_CONTENT_DIR,
     vidcap = cv2.VideoCapture("{}/{}".format(input_dir, gif))
     success, image = vidcap.read()
     count = 0
+
     while success:
         print('Read a new frame: {}'.format(success))
         cv2.imwrite("{}/{}.jpg".format(input_dir, count), image)
