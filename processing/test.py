@@ -16,10 +16,11 @@ import imageio
 import math
 
 # Initialize directories
-content_dir = 'input/content/pooh/'
-frames_dir = 'input/frames/pooh/'
-edges_dir = 'input/edges/pooh/'
-styledFrames_dir = 'results/frames/pooh/'
+content_dir = 'input/content/banana/'
+frames_dir = 'input/frames/banana/'
+edges_dir = 'input/edges/banana/'
+styledFrames_dir = 'results/frames/banana/'
+final_dir = 'results/final/banana/'
 
 (width, height) = cv2.imread(frames_dir+'0.jpg', flags=cv2.IMREAD_GRAYSCALE).shape
 
@@ -73,9 +74,19 @@ styled_arr = [[np.array(img) for img in frame] for frame in styled_imgs]
 for frame in styled_arr:
     for idx in range(len(frame)):
         paddedImg = np.zeros((width, height, 3))
-        dw = width - frame[idx].shape[0]
-        dh = height - frame[idx].shape[1]
-        paddedImg[dw:, dh:, :] = frame[idx]
+        dw = (width - frame[idx].shape[0])/2.0
+        dh = (height - frame[idx].shape[1])/2.0
+        w1 = 0
+        w2 = width
+        h1 = 0
+        h2 = height
+        if dw != 0:
+            w1 = math.ceil(dw)
+            w2 = math.floor(-dw)
+        if dh != 0:
+            h1 = math.ceil(dh)
+            h2 = math.floor(-dh)
+        paddedImg[w1:w2, h1:h2, :] = frame[idx]
         frame[idx] = paddedImg
 
 # Choose the label to style mapping
@@ -105,9 +116,13 @@ for idx in range(len(final_frames)):
 for img in final_frames:
     img.show()
 
+# Save the final images
+for idx in range(len(final_frames)):
+    final_frames[idx].save(final_dir + str(idx) + '.png')
+
 # Convert the final frames to uin8
 for idx in range(len(final_frames)):
     final_frames[idx] = np.uint8(final_frames[idx])
 	
 # Generate the final gif
-imageio.mimsave('NYC.gif', final_frames, fps = 10)
+imageio.mimsave('banana.gif', final_frames, fps = 10)
