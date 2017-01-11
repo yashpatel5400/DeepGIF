@@ -16,11 +16,11 @@ import imageio
 import math
 
 # Initialize directories
-content_dir = 'input/content/banana/'
-frames_dir = 'input/frames/banana/'
-edges_dir = 'input/edges/banana/'
-styledFrames_dir = 'results/frames/banana/'
-final_dir = 'results/final/banana/'
+content_dir = 'input/content/NYC/'
+frames_dir = 'input/frames/NYC/'
+edges_dir = 'input/edges/NYC/'
+styledFrames_dir = 'results/frames/NYC/'
+final_dir = 'results/final/NYC/'
 
 (width, height) = cv2.imread(frames_dir+'0.jpg', flags=cv2.IMREAD_GRAYSCALE).shape
 
@@ -59,7 +59,7 @@ for mask in masks[0:1]:
 # Apply the Style Transfer
 styled_imgs = [[] for _ in range(len(imgFrames))]
 for (frame, filename) in zip(styled_imgs, imgFrames):
-    for style in styles:
+   for style in styles:
         frame.append(fasttransfer.fast_stylize_image(filename, style, cache_dir = 'styletransfer/cache/', input_dir = frames_dir, output_dir = styledFrames_dir))
 
 # Load the styled images
@@ -74,25 +74,23 @@ styled_arr = [[np.array(img) for img in frame] for frame in styled_imgs]
 for frame in styled_arr:
     for idx in range(len(frame)):
         paddedImg = np.zeros((width, height, 3))
-        dw = (width - frame[idx].shape[0])/2.0
-        dh = (height - frame[idx].shape[1])/2.0
-        w1 = 0
-        w2 = width
-        h1 = 0
-        h2 = height
-        if dw != 0:
-            w1 = math.ceil(dw)
-            w2 = math.floor(-dw)
-        if dh != 0:
-            h1 = math.ceil(dh)
-            h2 = math.floor(-dh)
-        paddedImg[w1:w2, h1:h2, :] = frame[idx]
+        dw = (width - frame[idx].shape[0])
+        dh = (height - frame[idx].shape[1])
+        w1 = math.ceil(dw/2.0)
+        w2 = -math.floor(dw/2.0)
+        h1 = math.ceil(dh/2.0)
+        h2 = -math.floor(dh/2.0)
+        if w2 == 0:
+            w2 = width
+        if h2 == 0:
+            h2 = height
+        paddedImg[dw:, dh:, :] = frame[idx]
         frame[idx] = paddedImg
 
 # Choose the label to style mapping
 numLabels = len(np.unique(masks[0]))
-corrStyle = [2 for _ in range(numLabels)]
-corrStyle[0] = 5
+corrStyle = [7 for _ in range(numLabels)]
+corrStyle[0] = 2
 
 # Mask the frames and styles
 final_frames = []
@@ -113,7 +111,7 @@ for idx in range(len(final_frames)):
     final_frames[idx] = Image.fromarray(np.uint8(final_frames[idx]))
 
 # Show final images
-for img in final_frames:
+for img in final_frames[:1]:
     img.show()
 
 # Save the final images
@@ -125,4 +123,4 @@ for idx in range(len(final_frames)):
     final_frames[idx] = np.uint8(final_frames[idx])
 	
 # Generate the final gif
-imageio.mimsave('banana.gif', final_frames, fps = 10)
+imageio.mimsave('NYC.gif', final_frames, fps = 10)
