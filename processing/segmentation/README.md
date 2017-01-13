@@ -1,5 +1,5 @@
 ## Credit
-Special credit to: https://github.com/s9xie/hed. The final HED segmentation code was a result of their developed pre-trained model and associated execution code, meaning we greatly relied on their results for completing our project. The below is documentation given on their page, which shows what must be downloaded and some sample results:
+Special credit to: https://github.com/s9xie/hed. The final HED segmentation code (hed.py) was a result of their developed pre-trained model and associated execution code, meaning we greatly relied on their results for completing our project. The below is documentation given on their page, which shows what must be downloaded and some sample results:
 
 ### Introduction:
 
