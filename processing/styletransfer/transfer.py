@@ -105,7 +105,6 @@ def coherence_loss(generated_features):
 		generated_features[:, :WIDTH-1, 1:, :])
 	return K.sum(a + b)
 
-# Credit to: https://github.com/fchollet/keras/blob/master/examples/conv_filter_visualization.py
 def transform(content_features, style_features, transform_features, 
 	output_img, output_name, output_dir=s.OUTPUT_FINAL_DIR, save_intermediate=False):
 	"""
