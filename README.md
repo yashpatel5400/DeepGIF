@@ -1,5 +1,5 @@
 # DeepGIF
-Video style transfer using convolutional networks, with tracking and masks for GIFs! I
+Video style transfer using convolutional networks, with tracking and masks for GIFs!
 
 Implemented for Computer Vision 2016 (Princeton University) by Richard Du, Yash Patel, and Jason Shi. Feel free to make use of the files given here or contact us if anything is not working properly! Please note that the pre-trained models that are necessary are more fully described in their respective folder, i.e. in 'processing/styletransfer' and 'processing/segmentation.'
 
