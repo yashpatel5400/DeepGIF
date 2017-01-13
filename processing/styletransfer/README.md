@@ -3,7 +3,7 @@
 Implemented largely from scratch with Keras. This will take around 10-15 minutes on GPU compute time to complete, which means CPU completion is largely ruled out. The upside of this implementation is that it can be used with ANY style+content combination, meaning you're not limited to the ones you've trained on (unlike the faster implementation described below). Here are some sample outputs of the algorithm:
 
 ## Fast Chainer Implementation
-Significantly faster than the standard implementation provided above (around 10000x faster). Only downside is that it must be used with pre-trained models. HUGE gratitude to: https://github.com/yusuketomoto/chainer-fast-neuralstyle for developing and opening up the source for this fast neural style implementation.
+Significantly faster than the standard implementation provided above (around 10000x faster). Only downside is that it must be used with pre-trained models. HUGE gratitude to: https://github.com/yusuketomoto/chainer-fast-neuralstyle for developing and opening up the source for this fast neural style implementation. The following documentation is taken from that page:
 
 <img src="https://raw.githubusercontent.com/yusuketomoto/chainer-fast-neuralstyle/master/sample_images/tubingen.jpg" height="200px">
 
