@@ -1,6 +1,8 @@
 """
 __author__ = Yash Patel, Richard Du, and Jason Shi
-__description__ = Does edge segmentation using HED (pre-trained) model
+__description__ = Does edge segmentation using HED (pre-trained) model.
+Very special thank you https://github.com/s9xie/hed for the
+pre-trained model and usage code.
 """
 
 import settings as s
@@ -50,6 +52,9 @@ def segment_edges(imgs, cache_dir=s.MODEL_CACHE,
             print("Processing image {}".format(i + 1))
 
             im = Image.open("{}{}".format(input_dir, img))
+            
+            # The below code is gratiously taken from https://github.com/s9xie/hed 
+            # which makes use of the HED pre-trained model they developed
             pad_im  = add_padding(im)
             img_arr = np.array(pad_im, dtype=np.float32)
             img_arr = img_arr[:,:,::-1]
