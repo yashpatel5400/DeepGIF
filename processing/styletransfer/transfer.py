@@ -29,7 +29,7 @@ import imageio
 WIDTH  = None
 HEIGHT = None
 
-# stores loss and gradients for efficiency
+# stores loss and gradients for improving efficiency
 # Credit to: https://github.com/fchollet/keras/blob/master/examples/neural_style_transfer.py
 class GradLoss:
 	def __init__(self, iterate):
@@ -89,7 +89,8 @@ def content_loss(original_features, generated_features):
 	generated_content = generated_features[s.CONTENT_FEATURE_LAYER]
 	return K.sum(K.square(original_content - generated_content))
 
-# Credit to: https://github.com/fchollet/keras/blob/master/examples/neural_style_transfer.py
+# Idea developed through implementation given on: 
+# https://github.com/fchollet/keras/blob/master/examples/neural_style_transfer.py
 def coherence_loss(generated_features):
 	"""
 	Calculates local coherence loss, given the tensor being molded
