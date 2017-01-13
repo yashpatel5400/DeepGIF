@@ -1,6 +1,8 @@
 # DeepGIF
 Video style transfer using convolutional networks, with tracking and masks for GIFs!!! Implemented for Computer Vision 2016 (Princeton University) by Richard Du, Yash Patel, and Jason Shi
 
+https://drive.google.com/open?id=0B1HvHLG6sd6pWlFLRWMwM0ZaUU0
+
 ### Requirement ###
 
 - Python >=3.4
