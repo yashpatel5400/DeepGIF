@@ -1,6 +1,8 @@
 """
 __author__ = Yash Patel, Richard Du, and Jason Shi
-__description__ = Does fast neural style transfer from:
+__description__ = Does fast neural style transfer using the
+Fast Neural Style developed by Fei Fei Li. We give huge
+gratitude to the pre-trained models and usage code given by:
 https://github.com/yusuketomoto/chainer-fast-neuralstyle
 """
 from __future__ import print_function
@@ -56,6 +58,8 @@ def fast_stylize_image(content_img, model, cache_dir=s.FAST_MODEL_CACHE,
         + "contents of 'model' folder into the 'cache' folder")
         return
     
+    # The below is gratiously taken from: https://github.com/yusuketomoto/chainer-fast-neuralstyle
+    # where we make use of how the pre-trained model is intended to be run
     model = FastStyleNet()
     serializers.load_npz(model_name, model)
 
@@ -72,10 +76,10 @@ def fast_stylize_image(content_img, model, cache_dir=s.FAST_MODEL_CACHE,
     result = result[:, :, s.PADDING:-s.PADDING, s.PADDING:-s.PADDING]
     result = np.uint8(result[0].transpose((1, 2, 0)))
 
-    med = Image.fromarray(result)
-    med = med.filter(ImageFilter.MedianFilter(s.MEDIAN_FILTER))
-    med.convert('P', colors=256).save(final_name)
-    return med
+    result_img = Image.fromarray(result)
+    result_img = result_img.filter(ImageFilter.MedianFilter(s.MEDIAN_FILTER))
+    result_img.convert('P', colors=256).save(final_name)
+    return result_img
     
 if __name__ == "__main__":
     contents = ["bagend.jpg", "city.jpg"]
