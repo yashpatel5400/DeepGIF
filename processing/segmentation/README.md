@@ -1,4 +1,5 @@
-## Holistically-Nested Edge Detection
+## Credit
+Special credit to: https://github.com/s9xie/hed. The final HED segmentation code was a result of their developed pre-trained model and associated execution code, meaning we greatly relied on their results for completing our project. The below is documentation given on their page, which shows what must be downloaded and some sample results:
 
 ### Introduction:
 
@@ -18,13 +19,13 @@ We provide the pretrained model and training/testing code for the edge detection
 ### Acknowledgment: 
 This code is taken from a pretrained HED. Special thanks to:
 
-  @misc{xie15hed,
+    @misc{xie15hed,
       Author = {Xie, Saining and Tu, Zhuowen},
-      Title = {Holistically-Nested Edge Detection},
+      Title = { {Caffe}: An Open Source Convolutional Architecture for Fast Feature Embedding},
       Booktitle = {Proceedings of IEEE International Conference on Computer Vision},
       Year  = {2015},
     }
-
+    
 This code is based on Caffe. Thanks to the contributors of Caffe. Thanks @shelhamer and @longjon for providing fundamental implementations that enable fully convolutional training/testing in Caffe.
 
     @misc{Jia13caffe,
@@ -33,5 +34,3 @@ This code is based on Caffe. Thanks to the contributors of Caffe. Thanks @shelha
       Year  = {2013},
       Howpublished = {\url{http://caffe.berkeleyvision.org/}}
     }
-
-If you encounter any issue when using our code or model, please let me know.
