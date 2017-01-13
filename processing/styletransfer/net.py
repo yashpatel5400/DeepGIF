@@ -1,3 +1,12 @@
+"""
+__author__ = Yash Patel, Richard Du, and Jason Shi
+__description__ = Defines the networks used for fast neural style 
+transfer. Once again, huge gratitude to:
+https://github.com/yusuketomoto/chainer-fast-neuralstyle for defining
+these models. Note that these were necessary for the loading of the 
+pre-trained model to be well-defined.
+"""
+
 import math
 
 import numpy as np
