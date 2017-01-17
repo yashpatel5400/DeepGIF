@@ -2,7 +2,9 @@
 __author__ = Yash Patel, Richard Du, and Jason Shi
 __description__ = Extract the styles and contents from input images using
 standard 19-layer VGG CNN from an input image and outputs a
-test image to verify working
+test image to verify working. Developed largely independently but had grateful
+helpful from https://github.com/fchollet/keras/blob/master/examples/neural_style_transfer.py
+for optimizations of sections of implementation (i.e. caching gradients/using scikit)
 """
 
 import settings as s
@@ -11,6 +13,8 @@ from preprocess import deprocess_image, preprocess_gif
 import numpy as np
 import os
 from random import shuffle
+
+# used as a result of repo mentioned previously
 from scipy.optimize import fmin_l_bfgs_b
 
 from keras import backend as K
