@@ -8,6 +8,10 @@ Implemented for Computer Vision 2016 (Princeton University) by Richard Du, Yash 
 <img src="https://media.giphy.com/media/26xBP8Jg8b5tPHO9i/source.gif" width="400" height="400" />
 <img src="https://media.giphy.com/media/l3q2Zr1IYQyT6Jz3y/giphy.gif" width="400" height="400" />
 
+The algoirthm and necessary background information is fully laid out in the following paper:
+
+["./DeepGIF.pdf"](DeepGIF.pdf)
+
 ### Requirement ###
 
 - Python = 2.7
